@@ -20,6 +20,7 @@ namespace drivers {
 class WindowsNvmeDriver : public DriverBase {
  public:
   DparmReturn<std::unique_ptr<WindowsDriverHandle>> open(const char *path) override;
+  DparmReturn<std::unique_ptr<WindowsDriverHandle>> open(const WindowsPhysicalDrive &drive_info) override;
 };
 
 } // naemspace drivers

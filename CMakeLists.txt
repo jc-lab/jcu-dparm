@@ -61,8 +61,11 @@ if(MSVC AND WIN32)
             ${SRC_DIR}/plat-win/drivers/samsung_nvme_driver.cc
             ${SRC_DIR}/plat-win/drivers/scsi_driver.h
             ${SRC_DIR}/plat-win/drivers/scsi_driver.cc
+            ${SRC_DIR}/plat-win/drivers/ata_driver.h
+            ${SRC_DIR}/plat-win/drivers/ata_driver.cc
             ${SRC_DIR}/plat-win/drivers/windows_nvme_driver.h
             ${SRC_DIR}/plat-win/drivers/windows_nvme_driver.cc
+            ${SRC_DIR}/plat-win/drivers/windows_nvme_ioctl.h
             )
 else()
     set(PLATFORM_SRC_FILES
@@ -114,3 +117,4 @@ if (jcu_dparm_BUILD_TESTS)
 #    add_subdirectory(test)
 endif ()
 
+add_subdirectory(test)

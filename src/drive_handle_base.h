@@ -48,6 +48,8 @@ class DriveHandleBase : public DriveHandle {
 
   std::string fixAtaStringOrder(const unsigned char *buffer, int length, bool trim_right = true);
 
+  std::string trimString(const std::string &input);
+
   uint64_t fixAtaUint64Order(const void *buffer);
 
   void afterOpen();

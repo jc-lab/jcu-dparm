@@ -18,6 +18,7 @@
 
 #include "driver_base.h"
 #include "drivers/scsi_driver.h"
+#include "drivers/ata_driver.h"
 #include "drivers/nvme_win_driver.h"
 #include "drivers/samsung_nvme_driver.h"
 #include "drivers/windows_nvme_driver.h"
@@ -74,6 +75,7 @@ class Win32DriveFactory : public DriveFactory {
     drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::SamsungNvmeDriver()));
     drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::WindowsNvmeDriver()));
     drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::ScsiDriver()));
+    drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::AtaDriver()));
   }
 
   std::unique_ptr<DriveHandle> open(const char *drive_path) const override {
@@ -93,6 +95,25 @@ class Win32DriveFactory : public DriveFactory {
     return std::move(drive_handle);
   }
 
+  std::unique_ptr<DriveHandle> open(const WindowsPhysicalDrive &drive_info) const {
+    DparmReturn<std::unique_ptr<WindowsDriverHandle>> driver_handle;
+    std::string found_device_path;
+
+    for (auto drv_it = drivers_.cbegin(); drv_it != drivers_.cend(); drv_it++) {
+      driver_handle = std::move((*drv_it)->open(drive_info));
+      if (driver_handle.isOk()) {
+        found_device_path = driver_handle.value->getDevicePath();
+        break;
+      }
+    }
+
+    std::unique_ptr<Win32DriveHandle> drive_handle(new Win32DriveHandle(found_device_path, std::move(driver_handle.value), driver_handle));
+    if (driver_handle.isOk()) {
+      drive_handle->init();
+    }
+    return std::move(drive_handle);
+  }
+
   int enumDrives(std::list<DriveInfo>& result_list) const override {
     int rc;
     std::list<WindowsPhysicalDrive> devices;
@@ -101,7 +122,7 @@ class Win32DriveFactory : public DriveFactory {
       return rc;
 
     for (auto it = devices.cbegin(); it != devices.cend(); it++) {
-      auto handle = open(it->device_path.c_str());
+      auto handle = open(*it);
       result_list.emplace_back(handle->getDriveInfo());
     }
 

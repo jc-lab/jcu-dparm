@@ -148,11 +148,12 @@ struct NVME_PASS_THROUGH_IOCTL {
 
 class NvmeWinDriverHandle : public WindowsDriverHandle {
  private:
+   std::string device_path_;
   HANDLE handle_;
 
  public:
-  NvmeWinDriverHandle(HANDLE handle, NVME_PASS_THROUGH_IOCTL* identify_device_ioctl)
-  : handle_(handle)
+  NvmeWinDriverHandle(const char *device_path, HANDLE handle, NVME_PASS_THROUGH_IOCTL *identify_device_ioctl)
+  : device_path_(device_path), handle_(handle)
   {
     driving_type_ = kDrivingNvme;
     nvme_identify_device_buf_.insert(
@@ -171,6 +172,10 @@ class NvmeWinDriverHandle : public WindowsDriverHandle {
       ::CloseHandle(handle_);
       handle_ = nullptr;
     }
+  }
+
+  const std::string &getDevicePath() const override {
+    return device_path_;
   }
 
   DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t *cmd) override {
@@ -264,10 +269,11 @@ DparmReturn<std::unique_ptr<WindowsDriverHandle>> NvmeWinDriver::open(const char
 
     if(!DeviceIoControl(scsi_handle, IOCTL_SCSI_MINIPORT, &nptwb, length, &nptwb, length, &dwReturned, NULL)) {
       werr = (int)::GetLastError();
+      // 1117 ERROR_IO_DEVICE
       break;
     }
 
-    std::unique_ptr<NvmeWinDriverHandle> driver_handle(new NvmeWinDriverHandle(scsi_handle, &nptwb));
+    std::unique_ptr<NvmeWinDriverHandle> driver_handle(new NvmeWinDriverHandle(path, scsi_handle, &nptwb));
     return { DPARME_OK, 0, std::move(driver_handle) };
   } while(0);
 
@@ -277,6 +283,9 @@ DparmReturn<std::unique_ptr<WindowsDriverHandle>> NvmeWinDriver::open(const char
   return { DPARME_SYS, werr };
 }
 
+DparmReturn<std::unique_ptr<WindowsDriverHandle>> NvmeWinDriver::open(const WindowsPhysicalDrive &drive_info) {
+  return this->open(drive_info.physical_disk_path.c_str());
+}
 
 } // namespace dparm
 } // namespace plat_win

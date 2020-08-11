@@ -17,6 +17,7 @@ namespace drivers {
 
 class SamsungNvmeDriverHandle : public WindowsDriverHandle {
  private:
+  std::string device_path_;
   HANDLE handle_;
 
  public:
@@ -25,12 +26,23 @@ class SamsungNvmeDriverHandle : public WindowsDriverHandle {
   }
 
   void close() override {
+    if (handle_ && (handle_ != INVALID_HANDLE_VALUE)) {
+      ::CloseHandle(handle_);
+      handle_ = nullptr;
+    }
+  }
 
+  const std::string &getDevicePath() const override {
+    return device_path_;
   }
 };
 
 DparmReturn<std::unique_ptr<WindowsDriverHandle>> SamsungNvmeDriver::open(const char *path) {
   return { DPARME_SYS, 0 };
+}
+
+DparmReturn<std::unique_ptr<WindowsDriverHandle>> SamsungNvmeDriver::open(const WindowsPhysicalDrive &drive_info) {
+  return this->open(drive_info.physical_disk_path.c_str());
 }
 
 } // namespace dparm

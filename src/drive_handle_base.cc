@@ -79,6 +79,24 @@ std::string DriveHandleBase::fixAtaStringOrder(const unsigned char *buffer, int 
   return out;
 }
 
+std::string DriveHandleBase::trimString(const std::string &input) {
+  const char *begin = input.c_str();
+  int length = input.length();
+  const char *end = begin + input.length() - 1;
+
+  while ((*begin == ' ') || (*begin == '\r') || (*begin == '\n') || (*begin == '\t')) {
+    begin++;
+    length--;
+  }
+
+  while ((length > 0) && ((begin[length - 1] == ' ') || (begin[length - 1] == '\r') || (begin[length - 1] == '\n') || (begin[length - 1] == '\t'))) {
+    end--;
+    length--;
+  }
+
+  return std::string(begin, end);
+}
+
 uint64_t DriveHandleBase::fixAtaUint64Order(const void *buffer) {
   const unsigned char *ptr = (const unsigned char *)buffer;
   uint64_t out = 0;
@@ -122,9 +140,9 @@ int DriveHandleBase::parseIdentifyDevice() {
     drive_info_.ssd_check_weight = ssd_check_weight;
     drive_info_.is_ssd = ssd_check_weight > 0;
 
-    drive_info_.model = fixAtaStringOrder(data.model_number, sizeof(data.model_number), true);
-    drive_info_.firmware_revision = fixAtaStringOrder(data.firmware_revision, sizeof(data.firmware_revision), true);
-    drive_info_.serial = fixAtaStringOrder(data.serial_number, sizeof(data.serial_number), true);
+    drive_info_.model = trimString(fixAtaStringOrder(data.model_number, sizeof(data.model_number), true));
+    drive_info_.firmware_revision = trimString(fixAtaStringOrder(data.firmware_revision, sizeof(data.firmware_revision), true));
+    drive_info_.serial = trimString(fixAtaStringOrder(data.serial_number, sizeof(data.serial_number), true));
     if (data.sanitize_feature_supported) {
       drive_info_.support_sanitize_block_erase = data.block_erase_ext_command_supported;
       drive_info_.support_sanitize_crypto_erase = data.crypto_scramble_ext_command_supported;
@@ -149,7 +167,7 @@ int DriveHandleBase::parseIdentifyDevice() {
     drive_info_.nvme_minor_version = (uint8_t)(data.ver >> 8);
     drive_info_.nvme_tertiary_version = (uint8_t)(data.ver);
 
-    drive_info_.serial = readStringRange((const unsigned char *)data.sn, 0, sizeof(data.sn), true);
+    drive_info_.serial = readStringRange((const unsigned char *) data.sn, 0, sizeof(data.sn), true);
     drive_info_.model = readStringRange((const unsigned char *)data.mn, 0, sizeof(data.mn), true);
     drive_info_.firmware_revision = readStringRange((const unsigned char *)data.fr, 0, sizeof(data.fr), true);
 
@@ -168,6 +186,10 @@ int DriveHandleBase::parseIdentifyDevice() {
 
 DparmResult DriveHandleBase::doSecurityCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) {
   auto driver_handle = getDriverHandle();
+  DparmResult res = driver_handle->doSecurityCommand(protocol, com_id, rw, buffer, len, 5);
+  if (res.isOk()) {
+    return res;
+  }
   if (driver_handle->isNvmeCommandSupport()) {
     nvme::nvme_admin_cmd_t cmd = { 0 };
     cmd.opcode = (uint8_t)(rw ? nvme::NVME_ADMIN_OP_SECURITY_SEND : nvme::NVME_ADMIN_OP_SECURITY_RECV);
@@ -209,6 +231,11 @@ DparmResult DriveHandleBase::tcgDiscovery0() {
 
   dr = doSecurityCommand(0, 0, 0x01, 0x0001, buffer_ptr, tcg::MIN_BUFFER_LENGTH);
   if (!dr.isOk()) {
+    if (dr.code == DPARME_NOT_SUPPORTED) {
+      drive_info_.tcg_support = 0;
+    } else {
+      drive_info_.tcg_support = -1;
+    }
     return dr;
   }
 
@@ -217,7 +244,7 @@ DparmResult DriveHandleBase::tcgDiscovery0() {
   const unsigned char *discovery_dend = buffer_ptr + SWAP32(discovery_header->length);
   const unsigned char *discovery_aend = buffer.data() + buffer.size();
 
-  drive_info_.tcg_support = true;
+  drive_info_.tcg_support = 1;
 
   if (discovery_aend < discovery_dend) {
     return { DPARME_ILLEGAL_DATA, 0 };

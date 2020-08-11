@@ -99,7 +99,7 @@ int enumPhysicalDrives(std::list<WindowsPhysicalDrive> &devices) {
           break;
         }
 
-        std::basic_string<TCHAR> device_path(dev_interface_detail_ptr->DevicePath);
+        std::basic_string<TCHAR> setupapi_device_path(dev_interface_detail_ptr->DevicePath);
         drive_handle = CreateFile(
             dev_interface_detail_ptr->DevicePath,
             0,
@@ -123,8 +123,12 @@ int enumPhysicalDrives(std::list<WindowsPhysicalDrive> &devices) {
           break;
         }
 
+        char physical_disk_path[64];
+        sprintf_s(physical_disk_path, "\\\\.\\PhysicalDrive%u", stor_dev_num.DeviceNumber);
         WindowsPhysicalDrive drive_item = {
-            (int)stor_dev_num.DeviceNumber, std::string(device_path.cbegin(), device_path.cend())
+            (int) stor_dev_num.DeviceNumber,
+            physical_disk_path,
+            std::string(setupapi_device_path.cbegin(), setupapi_device_path.cend())
         };
         devices.emplace_back(drive_item);
       } while (0);

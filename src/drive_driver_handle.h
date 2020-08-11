@@ -72,6 +72,10 @@ class DriveDriverHandle {
   virtual DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t* io) {
     return { DPARME_NOT_SUPPORTED, 0 };
   }
+
+  virtual DparmResult doSecurityCommand(uint8_t protocol, uint16_t com_id, int rw, void *buffer, uint32_t len, int timeout) {
+    return { DPARME_NOT_IMPL, 0 };
+  }
 };
 
 } // namespace dparm

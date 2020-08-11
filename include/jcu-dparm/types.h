@@ -54,7 +54,12 @@ struct DriveInfo {
   bool support_sanitize_block_erase;
   bool support_sanitize_overwrite;
 
-  bool tcg_support;
+  /**
+   * -1 : Not determined (OS Error)
+   * 0 : Not supported
+   * 1 : Supported
+   */
+  int tcg_support;
 
   bool tcg_tper;
   bool tcg_geomerty_reporting;
@@ -70,6 +75,7 @@ struct DriveInfo {
   DriveInfo() {
     driving_type = kDrivingUnknown;
     memset(&ata_identify, 0, sizeof(ata_identify));
+    memset(&nvme_identify_ctrl, 0, sizeof(nvme_identify_ctrl));
     nvme_major_version = 0;
     nvme_minor_version = 0;
     nvme_tertiary_version = 0;

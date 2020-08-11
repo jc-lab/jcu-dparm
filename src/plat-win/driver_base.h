@@ -19,6 +19,8 @@
 
 #include "../drive_driver_handle.h"
 
+#include "physical_drive_finder.h"
+
 namespace jcu {
 namespace dparm {
 namespace plat_win {
@@ -27,12 +29,14 @@ class WindowsDriverHandle : public DriveDriverHandle {
  public:
   virtual ~WindowsDriverHandle() {}
   virtual HANDLE getHandle() const = 0;
+  virtual const std::string& getDevicePath() const = 0;
 };
 
 class DriverBase {
  public:
   virtual ~DriverBase() {}
   virtual DparmReturn<std::unique_ptr<WindowsDriverHandle>> open(const char* path) = 0;
+  virtual DparmReturn<std::unique_ptr<WindowsDriverHandle>> open(const WindowsPhysicalDrive& drive_info) = 0;
 };
 
 } // namespace plat_win

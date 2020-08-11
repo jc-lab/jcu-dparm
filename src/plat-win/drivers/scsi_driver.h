@@ -20,7 +20,9 @@ namespace drivers {
 class ScsiDriver : public DriverBase {
  public:
   DparmReturn<std::unique_ptr<WindowsDriverHandle>> open(const char *path) override;
+  DparmReturn<std::unique_ptr<WindowsDriverHandle>> open(const WindowsPhysicalDrive &drive_info) override;
 
+  static DparmResult doSecurityCommandImpl(HANDLE handle, uint8_t protocol, uint16_t com_id, int rw, void *buffer, uint32_t len, int timeout_secs);
 };
 
 } // naemspace drivers

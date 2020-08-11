@@ -20,7 +20,8 @@ namespace plat_win {
 
 struct WindowsPhysicalDrive {
   int device_index;
-  std::string device_path;
+  std::string physical_disk_path;
+  std::string setupapi_device_path;
 };
 
 int enumPhysicalDrives(std::list<WindowsPhysicalDrive>& devices);
