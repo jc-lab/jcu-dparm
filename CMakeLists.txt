@@ -94,27 +94,26 @@ target_include_directories(${PROJECT_NAME}
         )
 
 # Test
+#
+#if (jcu_dparm_BUILD_TESTS)
+#    set(gtest_force_shared_crt ON CACHE BOOL "")
+#
+#    if (NOT TARGET gtest)
+#        FetchContent_Declare(
+#                googletest
+#                GIT_REPOSITORY https://github.com/google/googletest.git
+#                GIT_TAG release-1.10.0
+#        )
+#
+#        FetchContent_GetProperties(googletest)
+#
+#        if (NOT googletest_POPULATED)
+#            FetchContent_Populate(googletest)
+#            add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+#        endif ()
+#    endif ()
+#
+#    enable_testing()
+##    add_subdirectory(test)
+#endif ()
 
-if (jcu_dparm_BUILD_TESTS)
-    set(gtest_force_shared_crt ON CACHE BOOL "")
-
-    if (NOT TARGET gtest)
-        FetchContent_Declare(
-                googletest
-                GIT_REPOSITORY https://github.com/google/googletest.git
-                GIT_TAG release-1.10.0
-        )
-
-        FetchContent_GetProperties(googletest)
-
-        if (NOT googletest_POPULATED)
-            FetchContent_Populate(googletest)
-            add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-        endif ()
-    endif ()
-
-    enable_testing()
-#    add_subdirectory(test)
-endif ()
-
-add_subdirectory(test)
