@@ -17,7 +17,7 @@ namespace dparm {
 
 namespace ata {
 
-enum {
+enum AtaOpCode {
   ATA_OP_DSM			= 0x06, // Data Set Management (TRIM)
   ATA_OP_READ_PIO			= 0x20,
   ATA_OP_READ_PIO_ONCE		= 0x21,
@@ -124,7 +124,7 @@ struct ata_tf {
 
 typedef struct ata_tf ata_tf_t;
 
-struct ata_identify_device_data {
+typedef struct ata_identify_device_data {
 
   struct {
     uint16_t reserved1 : 1;
@@ -197,7 +197,7 @@ struct ata_identify_device_data {
   uint16_t multi_word_dma_support : 8;// word 63
   uint16_t multi_word_dma_active : 8;
 
-  uint16_t advanced_pioModes : 8;// word 64. bit 0:1 - PIO mode supported
+  uint16_t advanced_pio_modes : 8;// word 64. bit 0:1 - PIO mode supported
   uint16_t reserved_byte64 : 8;
 
   uint16_t minimum_mwxfer_cycle_time;    // word 65
@@ -273,7 +273,7 @@ struct ata_identify_device_data {
     uint16_t software_settings_preservation : 1;// Device supports Software Settings Preservation
     uint16_t ncq_autosense : 1;                // Supports NCQ Autosense
 
-    uint16_t DEVSLP : 1;           // Device supports link power state - device sleep
+    uint16_t devslp : 1;           // Device supports link power state - device sleep
     uint16_t hybrid_information : 1;// Device supports Hybrid Information Feature (If the device does not support NCQ (word 76 bit 8 is 0), then this bit shall be cleared to 0.)
 
     uint16_t reserved1 : 6;
@@ -352,9 +352,9 @@ struct ata_identify_device_data {
     uint16_t gp_logging : 1;           // The GPL feature set is supported
     uint16_t write_fua : 1;            // The WRITE DMA FUA EXT and WRITE MULTIPLE FUA EXT commands are supported
     uint16_t write_queued_fua : 1;      // obsolete
-    uint16_t WWN64Bit : 1;            // The 64-bit World wide name is supported
-    uint16_t URGRead_stream : 1;       // obsolete
-    uint16_t URGWrite_stream : 1;      // obsolete
+    uint16_t wwn_64bit : 1;            // The 64-bit World wide name is supported
+    uint16_t urg_read_stream : 1;       // obsolete
+    uint16_t urg_write_stream : 1;      // obsolete
     uint16_t reserved_for_tech_report : 2;
     uint16_t idle_with_unload_feature : 1;// The IDLE IMMEDIATE command with UNLOAD feature is supported
     uint16_t word_valid : 2;            // shall be 01b
@@ -414,9 +414,9 @@ struct ata_identify_device_data {
     uint16_t gp_logging : 1;           // The GPL feature set is supported
     uint16_t write_fua : 1;            // The WRITE DMA FUA EXT and WRITE MULTIPLE FUA EXT commands are supported
     uint16_t write_queued_fua : 1;      // obsolete
-    uint16_t WWN64Bit : 1;            // The 64-bit World wide name is supported
-    uint16_t URGRead_stream : 1;       // obsolete
-    uint16_t URGWrite_stream : 1;      // obsolete
+    uint16_t wwn_64bit : 1;            // The 64-bit World wide name is supported
+    uint16_t urg_read_stream : 1;       // obsolete
+    uint16_t urg_write_stream : 1;      // obsolete
     uint16_t reserved_for_tech_report : 2;
     uint16_t idle_with_unload_feature : 1;// The IDLE IMMEDIATE command with UNLOAD FEATURE is supported
     uint16_t reserved4 : 2;            // bit 14 shall be set to 1; bit 15 shall be cleared to 0
@@ -436,7 +436,7 @@ struct ata_identify_device_data {
     uint16_t extended_time_reported : 1;
   } enhanced_security_erase_unit;
 
-  uint16_t current_aPMLevel : 8;// word 91
+  uint16_t current_apm_level : 8;// word 91
   uint16_t reserved_word91 : 8;
 
   uint16_t master_password_id;// word 92. Master Password Identifier
@@ -449,7 +449,7 @@ struct ata_identify_device_data {
   uint16_t stream_min_request_size;        // word 95
   uint16_t streaming_transfer_time_dma;    // word 96
   uint16_t streaming_access_latency_dma_pio;// word 97
-  uint32_t Streaming_perf_granularity;       // word 98, 99
+  uint32_t streaming_perf_granularity;       // word 98, 99
 
   uint32_t max48bit_lba[2];// word 100-103
 
@@ -517,11 +517,11 @@ struct ata_identify_device_data {
   uint16_t reserved_word129[31];//word 129...159. Vendor specific
 
   struct {//word 160
-    uint16_t maximum_current_in_mA : 12;
-    uint16_t cfa_power_mode1Disabled : 1;
-    uint16_t cfa_power_mode1Required : 1;
+    uint16_t maximum_current_in_ma : 12;
+    uint16_t cfa_power_mode1_disabled : 1;
+    uint16_t cfa_power_mode1_required : 1;
     uint16_t reserved0 : 1;
-    uint16_t word160Supported : 1;
+    uint16_t word160_supported : 1;
   } cfa_power_mode1;
 
   uint16_t reserved_for_cfa_word161[7];//Words 161-167
@@ -549,7 +549,7 @@ struct ata_identify_device_data {
     uint16_t data_tables_suported : 1;           // The SCT Data Tables command is supported
     uint16_t reserved1 : 6;
     uint16_t vendor_specific : 4;
-  } sCTCommand_transport;
+  } sct_command_transport;
 
   uint16_t reserved_word207[2];//Words 207-208
 
@@ -606,7 +606,7 @@ struct ata_identify_device_data {
   uint16_t signature : 8;//Word 255
   uint16_t check_sum : 8;
 
-};
+} ata_identify_device_data_t;
 
 #pragma pack(pop)
 

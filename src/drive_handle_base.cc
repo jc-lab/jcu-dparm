@@ -16,6 +16,13 @@
 namespace jcu {
 namespace dparm {
 
+DriveHandleBase::DriveHandleBase(const std::string& device_path, const DparmResult& open_result)
+    : device_path_(device_path)
+{
+  drive_info_.device_path = device_path_;
+  drive_info_.open_result = open_result;
+}
+
 std::string DriveHandleBase::readString(const unsigned char *buffer, int length, bool trim_right) {
   std::string out;
   int out_len = 0;
@@ -40,7 +47,7 @@ std::string DriveHandleBase::readString(const unsigned char *buffer, int length,
 }
 
 std::string DriveHandleBase::readStringRange(const unsigned char *buffer, int begin, int end, bool trim_right) {
-  int length = end - begin + 1;
+  int length = end - begin;
   return readString(buffer + begin, length, trim_right);
 }
 
@@ -84,17 +91,16 @@ uint64_t DriveHandleBase::fixAtaUint64Order(const void *buffer) {
 
 void DriveHandleBase::afterOpen() {
   auto driver_handle = getDriverHandle();
-  drive_info_.reset();
   drive_info_.driving_type = driver_handle->getDrivingType();
   parseIdentifyDevice();
-  opalDiscovery0();
+  tcgDiscovery0();
 }
 
 int DriveHandleBase::parseIdentifyDevice() {
   auto driver_handle = getDriverHandle();
 
   if (driver_handle->getDrivingType() == kDrivingAtapi) {
-    ata::ata_identify_device_data data;
+    ata::ata_identify_device_data_t data;
     auto raw = driver_handle->getAtaIdentifyDeviceBuf();
     int ssd_check_weight = 0;
 
@@ -104,8 +110,7 @@ int DriveHandleBase::parseIdentifyDevice() {
 
     memcpy(&data, raw.data(), sizeof(data));
 
-    drive_info_.ata_major_version = data.major_revision;
-    drive_info_.ata_minor_version = data.minor_revision;
+    drive_info_.ata_identify = data;
 
     if (data.nominal_media_rotation_rate == 0 || data.nominal_media_rotation_rate == 1) {
       ssd_check_weight++;
@@ -130,47 +135,62 @@ int DriveHandleBase::parseIdentifyDevice() {
       drive_info_.support_sanitize_overwrite = false;
     }
   }else if (driver_handle->getDrivingType() == kDrivingNvme) {
+    nvme::nvme_identify_controller_t data;
     auto raw = driver_handle->getNvmeIdentifyDeviceBuf();
 
     if (raw.size() < 4096) {
       return 1;
     }
 
-    drive_info_.nvme_major_version = raw.data()[82]; // 83:82
-    drive_info_.nvme_minor_version = raw.data()[81];
-    drive_info_.nvme_tertiary_version = raw.data()[80];
+    memcpy(&data, raw.data(), sizeof(data));
+    drive_info_.nvme_identify_ctrl = data;
 
-    drive_info_.serial = readStringRange(raw.data(), 4, 23, true);
-    drive_info_.model = readStringRange(raw.data(), 24, 63, true);
-    drive_info_.firmware_revision = readStringRange(raw.data(), 64, 71, true);
+    drive_info_.nvme_major_version = (uint8_t)(data.ver >> 16);
+    drive_info_.nvme_minor_version = (uint8_t)(data.ver >> 8);
+    drive_info_.nvme_tertiary_version = (uint8_t)(data.ver);
+
+    drive_info_.serial = readStringRange((const unsigned char *)data.sn, 0, sizeof(data.sn), true);
+    drive_info_.model = readStringRange((const unsigned char *)data.mn, 0, sizeof(data.mn), true);
+    drive_info_.firmware_revision = readStringRange((const unsigned char *)data.fr, 0, sizeof(data.fr), true);
 
     drive_info_.ssd_check_weight = 0;
     drive_info_.is_ssd = true;
 
     {
-      unsigned char sanitize_value = raw.data()[328];
-      drive_info_.support_sanitize_crypto_erase = (sanitize_value & 0x01) != 0;
-      drive_info_.support_sanitize_block_erase = (sanitize_value & 0) != 0;
-      drive_info_.support_sanitize_overwrite = (sanitize_value & 0x04) != 0;
+      drive_info_.support_sanitize_crypto_erase = (data.sanicap & 0x01) != 0;
+      drive_info_.support_sanitize_block_erase = (data.sanicap & 0x02) != 0;
+      drive_info_.support_sanitize_overwrite = (data.sanicap & 0x04) != 0;
     }
   }
 
   return 0;
 }
 
-DparmResult DriveHandleBase::doOpalCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) {
-  ata::ata_tf_t tf = {0};
+DparmResult DriveHandleBase::doSecurityCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) {
+  auto driver_handle = getDriverHandle();
+  if (driver_handle->isNvmeCommandSupport()) {
+    nvme::nvme_admin_cmd_t cmd = { 0 };
+    cmd.opcode = (uint8_t)(rw ? nvme::NVME_ADMIN_OP_SECURITY_SEND : nvme::NVME_ADMIN_OP_SECURITY_RECV);
+    cmd.addr = (uint64_t)buffer;
+    cmd.data_len = len;
+    cmd.cdw10 = ((((uint32_t)protocol) & 0xff) << 24) | ((((uint32_t)com_id) & 0xffff) << 8);
+    cmd.cdw11 = len;
+    return driver_handle->doNvmeAdminPassthru(&cmd);
+  } else if (driver_handle->isAtaCommandSupport()) {
+    ata::ata_tf_t tf = {0};
 
-  tf.lob.feat = protocol;
-  tf.lob.nsect = len / 512;
-  if (rw) {
-    tf.command = dma ? ata::ATA_OP_TRUSTED_SEND_DMA : ata::ATA_OP_TRUSTED_SEND;
-  } else {
-    tf.command = dma ? ata::ATA_OP_TRUSTED_RECV_DMA : ata::ATA_OP_TRUSTED_RECV;
+    tf.lob.feat = protocol;
+    tf.lob.nsect = len / 512;
+    if (rw) {
+      tf.command = dma ? ata::ATA_OP_TRUSTED_SEND_DMA : ata::ATA_OP_TRUSTED_SEND;
+    } else {
+      tf.command = dma ? ata::ATA_OP_TRUSTED_RECV_DMA : ata::ATA_OP_TRUSTED_RECV;
+    }
+    tf.lob.lbam = (uint8_t) com_id;
+    tf.lob.lbah = (uint8_t) (com_id >> 8U);
+    return this->getDriverHandle()->doTaskfileCmd(rw, dma, &tf, buffer, len, 15);
   }
-  tf.lob.lbam = (uint8_t)com_id;
-  tf.lob.lbah = (uint8_t)(com_id >> 8U);
-  return this->getDriverHandle()->doTaskfileCmd(rw, dma, &tf, buffer, len, 15);
+  return { DPARME_NOT_SUPPORTED, 0 };
 }
 
 void HEX_DUMPS(const void *data, int length) {
@@ -181,13 +201,13 @@ void HEX_DUMPS(const void *data, int length) {
   printf("\n");
 }
 
-DparmResult DriveHandleBase::opalDiscovery0() {
+DparmResult DriveHandleBase::tcgDiscovery0() {
   std::vector<unsigned char> buffer(tcg::MIN_BUFFER_LENGTH + tcg::IO_BUFFER_ALIGNMENT);
   unsigned char *buffer_ptr = (unsigned char *)((uintptr_t)(buffer.data() + tcg::IO_BUFFER_ALIGNMENT) & (uintptr_t)~(tcg::IO_BUFFER_ALIGNMENT - 1));
 
   DparmResult dr;
 
-  dr = doOpalCommand(0, 0, 0x01, 0x0001, buffer_ptr, tcg::MIN_BUFFER_LENGTH);
+  dr = doSecurityCommand(0, 0, 0x01, 0x0001, buffer_ptr, tcg::MIN_BUFFER_LENGTH);
   if (!dr.isOk()) {
     return dr;
   }
@@ -196,6 +216,8 @@ DparmResult DriveHandleBase::opalDiscovery0() {
   const unsigned char *discovery_cptr = buffer_ptr;
   const unsigned char *discovery_dend = buffer_ptr + SWAP32(discovery_header->length);
   const unsigned char *discovery_aend = buffer.data() + buffer.size();
+
+  drive_info_.tcg_support = true;
 
   if (discovery_aend < discovery_dend) {
     return { DPARME_ILLEGAL_DATA, 0 };
@@ -243,12 +265,6 @@ DparmResult DriveHandleBase::opalDiscovery0() {
     drive_info_.tcg_raw_features.emplace(feature_code, item_buffer);
     discovery_cptr += cur->basic.length + 4;
   }
-
-  printf("doOpalCommand : %d / %d\n", dr.code, dr.sys_error);
-
-
-
-  HEX_DUMPS(buffer.data(), buffer.size());
 
   return dr;
 }

@@ -20,7 +20,7 @@ set(INC_FILES
         ${INC_DIR}/err.h
         ${INC_DIR}/ata_types.h
         ${INC_DIR}/ata_utils.h
-        ${INC_DIR}/ssd_provider.h
+        ${INC_DIR}/nvme_types.h
         )
 
 set(SRC_FILES
@@ -51,6 +51,8 @@ if(MSVC AND WIN32)
             ${SRC_DIR}/plat-win/drive_factory.cc
             ${SRC_DIR}/plat-win/driver_base.h
             ${SRC_DIR}/plat-win/driver_base.cc
+            ${SRC_DIR}/plat-win/physical_drive_finder.cc
+            ${SRC_DIR}/plat-win/physical_drive_finder.h
             ${SRC_DIR}/plat-win/drivers/driver_utils.h
             ${SRC_DIR}/plat-win/drivers/driver_utils.cc
             ${SRC_DIR}/plat-win/drivers/nvme_win_driver.h
@@ -78,6 +80,7 @@ else()
             ${SRC_DIR}/plat-linux/drivers/sg_driver.h
             ${SRC_DIR}/plat-linux/drivers/nvme_driver.cc
             ${SRC_DIR}/plat-linux/drivers/nvme_driver.h
+            ${SRC_DIR}/plat-linux/drivers/nvme_ioctl.h
             )
 endif(MSVC AND WIN32)
 

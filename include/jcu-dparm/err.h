@@ -20,8 +20,9 @@ enum DparmCode {
   DPARME_OK = 0,
   DPARME_SYS = 1,
   DPARME_NOT_SUPPORTED = 2,
-  DPARME_ATA_FAILED = 3,
   DPARME_ILLEGAL_DATA = 11,
+  DPARME_IOCTL_FAILED = 21,
+  DPARME_ATA_FAILED = 31,
 };
 
 struct DparmResult {

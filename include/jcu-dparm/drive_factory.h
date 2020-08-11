@@ -10,28 +10,24 @@
 #ifndef JCU_DPARM_DRIVE_FACTORY_H_
 #define JCU_DPARM_DRIVE_FACTORY_H_
 
-#include <memory>
 #include <stdint.h>
 
-#include <stdio.h>
+#include <memory>
+#include <list>
+
+#include "err.h"
+#include "types.h"
 
 namespace jcu {
 namespace dparm {
-
-static void HEX_DUMPS(const void *data, int length) {
-  const unsigned char *u = (const unsigned char *) data;
-  for (int i = 0; i < length; i++) {
-    printf("%02x ", u[i]);
-  }
-  printf("\n");
-}
 
 class DriveHandle;
 class DriveFactory {
  public:
   static DriveFactory* getSystemFactory();
 
-  virtual std::unique_ptr<DriveHandle> open(const char* drive_path) = 0;
+  virtual std::unique_ptr<DriveHandle> open(const char* drive_path) const = 0;
+  virtual int enumDrives(std::list<DriveInfo>& result_list) const = 0;
 };
 
 } // namespace dparm

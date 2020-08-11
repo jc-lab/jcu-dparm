@@ -69,18 +69,18 @@ void tf_init (struct ata_tf *tf, uint8_t ata_op, uint64_t lba, unsigned int nsec
   memset(tf, 0, sizeof(*tf));
   tf->command  = ata_op;
   tf->dev      = ATA_USING_LBA;
-  tf->lob.lbal = lba;
-  tf->lob.lbam = lba >>  8;
-  tf->lob.lbah = lba >> 16;
+  tf->lob.lbal = (uint8_t)(lba);
+  tf->lob.lbam = (uint8_t)(lba >>  8U);
+  tf->lob.lbah = (uint8_t)(lba >> 16U);
   tf->lob.nsect = nsect;
   if (needs_lba48(ata_op, lba, nsect)) {
     tf->is_lba48 = 1;
-    tf->hob.nsect = nsect >> 8;
-    tf->hob.lbal = lba >> 24;
-    tf->hob.lbam = lba >> 32;
-    tf->hob.lbah = lba >> 40;
+    tf->hob.nsect = (uint8_t)(nsect >> 8U);
+    tf->hob.lbal = (uint8_t)(lba >> 24U);
+    tf->hob.lbam = (uint8_t)(lba >> 32U);
+    tf->hob.lbah = (uint8_t)(lba >> 40U);
   } else {
-    tf->dev |= (lba >> 24) & 0x0f;
+    tf->dev |= (uint8_t)((lba >> 24U) & 0x0f);
   }
 }
 

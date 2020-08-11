@@ -170,7 +170,7 @@ class ScsiDriverHandle : public WindowsDriverHandle {
   HANDLE handle_;
 
  public:
-  ScsiDriverHandle(HANDLE handle, ata::ata_identify_device_data *identify_device_data)
+  ScsiDriverHandle(HANDLE handle, ata::ata_identify_device_data_t *identify_device_data)
       : handle_(handle) {
     const unsigned char *raw_identify_device_data = (const unsigned char *)identify_device_data;
     driving_type_ = kDrivingAtapi;
@@ -178,7 +178,7 @@ class ScsiDriverHandle : public WindowsDriverHandle {
     ata_identify_device_buf_.insert(
         ata_identify_device_buf_.end(),
         &raw_identify_device_data[0],
-        &raw_identify_device_data[sizeof(ata::ata_identify_device_data)]
+        &raw_identify_device_data[sizeof(ata::ata_identify_device_data_t)]
     );
   }
 
@@ -212,7 +212,7 @@ DparmReturn<std::unique_ptr<WindowsDriverHandle>> ScsiDriver::open(const char *p
   DparmResult result;
 
   do {
-    ata::ata_identify_device_data temp = {0};
+    ata::ata_identify_device_data_t temp = {0};
 
     drive_handle = CreateFile(
         drive_path.c_str(), GENERIC_READ | GENERIC_WRITE,

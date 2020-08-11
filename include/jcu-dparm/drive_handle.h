@@ -28,7 +28,7 @@ class DriveHandle {
   virtual const std::vector<unsigned char> getAtaIdentifyDeviceRaw() const = 0;
   virtual const std::vector<unsigned char> getNvmeIdentifyDeviceRaw() const = 0;
 
-  virtual DparmResult doOpalCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) = 0;
+  virtual DparmResult doSecurityCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) = 0;
 
   virtual DparmReturn<SanitizeCmdResult> doSanitizeCmd(SanitizeFeature feature) = 0;
 

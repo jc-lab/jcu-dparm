@@ -11,10 +11,15 @@
 #define JCU_DPARM_TYPES_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include <string>
 #include <map>
 #include <vector>
+
+#include "err.h"
+#include "ata_types.h"
+#include "nvme_types.h"
 
 namespace jcu {
 namespace dparm {
@@ -26,14 +31,18 @@ enum DrivingType {
 };
 
 struct DriveInfo {
+  std::string device_path;
+  DparmResult open_result;
+
   DrivingType driving_type;
 
   std::string model;
   std::string serial;
   std::string firmware_revision;
 
-  int ata_major_version;
-  int ata_minor_version;
+  ata::ata_identify_device_data_t ata_identify;
+  nvme::nvme_identify_controller_t nvme_identify_ctrl;
+
   unsigned char nvme_major_version;
   unsigned char nvme_minor_version;
   unsigned char nvme_tertiary_version;
@@ -44,6 +53,8 @@ struct DriveInfo {
   bool support_sanitize_crypto_erase;
   bool support_sanitize_block_erase;
   bool support_sanitize_overwrite;
+
+  bool tcg_support;
 
   bool tcg_tper;
   bool tcg_geomerty_reporting;
@@ -56,10 +67,9 @@ struct DriveInfo {
 
   std::map<uint16_t, std::vector<unsigned char>> tcg_raw_features;
 
-  void reset() {
+  DriveInfo() {
     driving_type = kDrivingUnknown;
-    ata_major_version = 0;
-    ata_minor_version = 0;
+    memset(&ata_identify, 0, sizeof(ata_identify));
     nvme_major_version = 0;
     nvme_minor_version = 0;
     nvme_tertiary_version = 0;
@@ -68,6 +78,7 @@ struct DriveInfo {
     support_sanitize_crypto_erase = false;
     support_sanitize_block_erase = false;
     support_sanitize_overwrite = false;
+    tcg_support = false;
     tcg_tper = false;
     tcg_geomerty_reporting = false;
     tcg_locking = false;
@@ -76,10 +87,6 @@ struct DriveInfo {
     tcg_enterprise = false;
     tcg_single_user_mode = false;
     tcg_datastore = false;
-  }
-
-  DriveInfo() {
-    reset();
   }
 };
 

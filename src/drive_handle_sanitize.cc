@@ -51,12 +51,12 @@ DparmReturn<SanitizeCmdResult> DriveHandleBase::doSanitizeCmd(SanitizeFeature fe
         lba = ata::SANITIZE_OVERWRITE_KEY;
         break;
     }
-    tf.lob.lbal    = lba;
-    tf.lob.lbam    = lba >>  8;
-    tf.lob.lbah    = lba >> 16;
-    tf.hob.lbal    = lba >> 24;
-    tf.hob.lbam    = lba >> 32;
-    tf.hob.lbah    = lba >> 40;
+    tf.lob.lbal    = (uint8_t)(lba);
+    tf.lob.lbam    = (uint8_t)(lba >>  8);
+    tf.lob.lbah    = (uint8_t)(lba >> 16);
+    tf.hob.lbal    = (uint8_t)(lba >> 24);
+    tf.hob.lbam    = (uint8_t)(lba >> 32);
+    tf.hob.lbah    = (uint8_t)(lba >> 40);
     tf.is_lba48 = 1;
     dr = driver_handle->doTaskfileCmd(0, -1, &tf, nullptr, 0, 15);
     if (!dr.isOk()) {

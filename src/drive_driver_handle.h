@@ -15,6 +15,7 @@
 
 #include <jcu-dparm/types.h>
 #include <jcu-dparm/ata_types.h>
+#include <jcu-dparm/nvme_types.h>
 
 namespace jcu {
 namespace dparm {
@@ -28,16 +29,6 @@ class DriveDriverHandle {
  public:
   virtual ~DriveDriverHandle() {}
   virtual void close() = 0;
-  virtual DparmResult doTaskfileCmd(
-      int rw,
-      int dma,
-      ata::ata_tf_t *tf,
-      void *data,
-      unsigned int data_bytes,
-      unsigned int timeout_secs
-  ) {
-    return { DPARME_NOT_SUPPORTED, 0 };
-  }
 
   DrivingType getDrivingType() const {
     return driving_type_;
@@ -57,6 +48,29 @@ class DriveDriverHandle {
 
   const std::vector<unsigned char> &getNvmeIdentifyDeviceBuf() const {
     return nvme_identify_device_buf_;
+  }
+
+  virtual DparmResult doTaskfileCmd(
+      int rw,
+      int dma,
+      ata::ata_tf_t *tf,
+      void *data,
+      unsigned int data_bytes,
+      unsigned int timeout_secs
+  ) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  virtual DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t* cmd) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  virtual DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t* cmd) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  virtual DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t* io) {
+    return { DPARME_NOT_SUPPORTED, 0 };
   }
 };
 
