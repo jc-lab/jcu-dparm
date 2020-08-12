@@ -88,6 +88,8 @@ DparmReturn<std::unique_ptr<LinuxDriverHandle>> SgDriver::open(const char *path)
       break;
     }
 
+    dev.debug_puts = options_.debug_puts;
+
     dev.verbose = 1;
     apt_detect(&dev, 1);
 

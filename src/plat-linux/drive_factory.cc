@@ -67,12 +67,15 @@ class LinuxDriveHandle : public DriveHandleBase {
 
 class LinuxDriveFactory : public DriveFactory {
  private:
+  const DriveFactoryOptions options_;
   std::list<std::unique_ptr<DriverBase>> drivers_;
 
  public:
-  LinuxDriveFactory() {
-    drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::NvmeDriver()));
-    drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::SgDriver()));
+  LinuxDriveFactory(const DriveFactoryOptions& options)
+  : options_(options)
+  {
+    drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::NvmeDriver(options_)));
+    drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::SgDriver(options_)));
   }
 
   std::unique_ptr<DriveHandle> open(const char *drive_path) const override {
@@ -125,9 +128,20 @@ static LinuxSingletoneLoader _loader();
 
 }; // namespace plat_linux
 
+static int debugToStderrPuts(const std::string& text) {
+  return fputs(text.c_str(), stderr);
+}
+
 DriveFactory* DriveFactory::getSystemFactory() {
-  static plat_linux::LinuxDriveFactory INSTANCE;
+  static DriveFactoryOptions options = {
+      debugToStderrPuts
+  };
+  static plat_linux::LinuxDriveFactory INSTANCE(options);
   return &INSTANCE;
+}
+
+std::shared_ptr<DriveFactory> DriveFactory::createSystemFactory(const DriveFactoryOptions &options) {
+  return std::make_shared<plat_linux::LinuxDriveFactory>(options);
 }
 
 } // namespace dparm

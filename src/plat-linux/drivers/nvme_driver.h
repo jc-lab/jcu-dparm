@@ -19,6 +19,7 @@ namespace drivers {
 
 class NvmeDriver : public DriverBase {
  public:
+  NvmeDriver(const DriveFactoryOptions& options) : DriverBase(options) {}
   DparmReturn<std::unique_ptr<LinuxDriverHandle>> open(const char *path) override;
 };
 

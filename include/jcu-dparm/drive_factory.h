@@ -25,6 +25,7 @@ class DriveHandle;
 class DriveFactory {
  public:
   static DriveFactory* getSystemFactory();
+  static std::shared_ptr<DriveFactory> createSystemFactory(const DriveFactoryOptions& options);
 
   virtual std::unique_ptr<DriveHandle> open(const char* drive_path) const = 0;
   virtual int enumDrives(std::list<DriveInfo>& result_list) const = 0;

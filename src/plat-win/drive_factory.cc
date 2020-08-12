@@ -67,10 +67,13 @@ class Win32DriveHandle : public DriveHandleBase {
 
 class Win32DriveFactory : public DriveFactory {
  private:
+  const DriveFactoryOptions options_;
   std::list<std::unique_ptr<DriverBase>> drivers_;
 
  public:
-  Win32DriveFactory() {
+  Win32DriveFactory(const DriveFactoryOptions &options)
+  : options_(options)
+  {
     drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::NvmeWinDriver()));
     drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::SamsungNvmeDriver()));
     drivers_.emplace_back(std::unique_ptr<DriverBase>(new drivers::WindowsNvmeDriver()));
@@ -140,9 +143,20 @@ static Win32SingletoneLoader _loader();
 
 }; // namespace plat_win
 
-DriveFactory *DriveFactory::getSystemFactory() {
-  static plat_win::Win32DriveFactory INSTANCE;
+static int debugToStderrPuts(const std::string& text) {
+  return fputs(text.c_str(), stderr);
+}
+
+DriveFactory* DriveFactory::getSystemFactory() {
+  static DriveFactoryOptions options = {
+      debugToStderrPuts
+  };
+  static plat_win::Win32DriveFactory INSTANCE(options);
   return &INSTANCE;
+}
+
+std::shared_ptr<DriveFactory> DriveFactory::createSystemFactory(const DriveFactoryOptions &options) {
+  return std::make_shared<plat_win::Win32DriveFactory>(options);
 }
 
 } // namespace dparm

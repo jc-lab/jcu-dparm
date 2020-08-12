@@ -16,6 +16,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <functional>
 
 #include "err.h"
 #include "ata_types.h"
@@ -23,6 +24,12 @@
 
 namespace jcu {
 namespace dparm {
+
+typedef std::function<int(const std::string&)> DebugPutsType;
+
+struct DriveFactoryOptions {
+  DebugPutsType debug_puts;
+};
 
 enum DrivingType {
   kDrivingUnknown = 0,

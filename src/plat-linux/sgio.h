@@ -13,6 +13,8 @@
  * prototypes and stuff for ATA command ioctls
  */
 
+#include <functional>
+
 #include <linux/types.h>
 
 #include <jcu-dparm/ata_types.h>
@@ -204,6 +206,7 @@ struct scsi_sg_device {
   struct apt_data_struct apt_data;
   int verbose;
   int last_errno;
+  std::function<int(const std::string&)> debug_puts;
 };
 
 #ifndef SG_DXFER_NONE
@@ -263,6 +266,8 @@ int apt_detect(scsi_sg_device *dev, int verbose);
 int apt_is_apt(scsi_sg_device *dev);
 int apt_sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
 		void *data, unsigned int data_bytes, unsigned int timeout_secs);
+
+int sgio_dbgprintf(scsi_sg_device *dev, const char* fmt, ...);
 
 } // namespace dparm
 } // namespace jcu

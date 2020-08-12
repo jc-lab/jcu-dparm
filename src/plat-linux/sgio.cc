@@ -15,8 +15,11 @@
  * sgio.c - by Mark Lord (C) 2007 -- freely distributable
  */
 
+#include <vector>
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -193,15 +196,27 @@ enum {
   SG_CDB2_CHECK_COND = 1 << 5,
 };
 
-static void dump_bytes(const char *prefix, const void *in, int len) {
+static void dump_bytes(scsi_sg_device *dev, const char *prefix, const void *in, int len) {
   int i;
   const unsigned char *p = (const unsigned char *)in;
 
   if (prefix)
-    fprintf(stderr, "%s: ", prefix);
+    sgio_dbgprintf(dev, "%s: ", prefix);
   for (i = 0; i < len; ++i)
-    fprintf(stderr, " %02x", p[i]);
-  fprintf(stderr, "\n");
+    sgio_dbgprintf(dev, " %02x", p[i]);
+  sgio_dbgprintf(dev, "\n");
+}
+
+int sgio_dbgprintf(scsi_sg_device *dev, const char* fmt, ...) {
+  std::vector<char> buffer(strlen(fmt) + 256);
+  va_list args;
+  va_start(args, fmt);
+  int length = vsnprintf(buffer.data(), buffer.size(), fmt, args);
+  va_end(args);
+  if (dev->debug_puts) {
+    return dev->debug_puts(std::string(buffer.data(), length));
+  }
+  return 0;
 }
 
 int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
@@ -286,9 +301,9 @@ int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
   io_hdr.timeout = (timeout_secs ? timeout_secs : default_timeout_secs) * 1000; /* msecs */
 
   if (dev->verbose) {
-    dump_bytes("outgoing cdb", cdb, sizeof(cdb));
+    dump_bytes(dev, "outgoing cdb", cdb, sizeof(cdb));
     if (rw && data)
-      dump_bytes("outgoing_data", data, data_bytes);
+      dump_bytes(dev, "outgoing_data", data, data_bytes);
   }
 
   if (ioctl(dev->fd, SG_IO, &io_hdr) == -1) {
@@ -299,30 +314,30 @@ int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
   }
 
   if (dev->verbose)
-    fprintf(stderr, "SG_IO: ATA_%u status=0x%x, host_status=0x%x, driver_status=0x%x\n",
+    sgio_dbgprintf(dev, "SG_IO: ATA_%u status=0x%x, host_status=0x%x, driver_status=0x%x\n",
             io_hdr.cmd_len, io_hdr.status, io_hdr.host_status, io_hdr.driver_status);
 
   if (io_hdr.status && io_hdr.status != SG_CHECK_CONDITION) {
     if (dev->verbose)
-      fprintf(stderr, "SG_IO: bad status: 0x%x\n", io_hdr.status);
+      sgio_dbgprintf(dev, "SG_IO: bad status: 0x%x\n", io_hdr.status);
     errno = EBADE;
     return -1;
   }
   if (io_hdr.host_status) {
     if (dev->verbose)
-      fprintf(stderr, "SG_IO: bad host status: 0x%x\n", io_hdr.host_status);
+      sgio_dbgprintf(dev, "SG_IO: bad host status: 0x%x\n", io_hdr.host_status);
     errno = EBADE;
     return -1;
   }
   if (dev->verbose) {
-    dump_bytes("SG_IO: sb[]", sb_ptr, sb_size);
+    dump_bytes(dev, "SG_IO: sb[]", sb_ptr, sb_size);
     if (!rw && data)
-      dump_bytes("incoming_data", data, data_bytes);
+      dump_bytes(dev, "incoming_data", data, data_bytes);
   }
 
   if (io_hdr.driver_status && (io_hdr.driver_status != SG_DRIVER_SENSE)) {
     if (dev->verbose)
-      fprintf(stderr, "SG_IO: bad driver status: 0x%x\n", io_hdr.driver_status);
+      sgio_dbgprintf(dev, "SG_IO: bad driver status: 0x%x\n", io_hdr.driver_status);
     errno = EBADE;
     return -1;
   }
@@ -332,14 +347,14 @@ int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
     if (sb_ptr[0] | sb_ptr[1] | sb_ptr[2] | sb_ptr[3] | sb_ptr[4] | sb_ptr[5] | sb_ptr[6] | sb_ptr[7] | sb_ptr[8] | sb_ptr[9]) {
       static int second_try = 0;
       if (!second_try++)
-        fprintf(stderr, "SG_IO: questionable sense data, results may be incorrect\n");
+        sgio_dbgprintf(dev, "SG_IO: questionable sense data, results may be incorrect\n");
     } else if (demanded_sense) {
       static int second_try = 0;
       if (!second_try++)
-        fprintf(stderr, "SG_IO: missing sense data, results may be incorrect\n");
+        sgio_dbgprintf(dev, "SG_IO: missing sense data, results may be incorrect\n");
     }
   } else if (sb_ptr[0] != 0x72 || sb_ptr[7] < 14 || desc[0] != 0x09 || desc[1] < 0x0c) {
-    dump_bytes("SG_IO: bad/missing sense data, sb_ptr[]", sb_ptr, sb_size);
+    dump_bytes(dev, "SG_IO: bad/missing sense data, sb_ptr[]", sb_ptr, sb_size);
     return_code = 1;
   }
 
@@ -347,7 +362,7 @@ int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
     unsigned int len = desc[1] + 2, maxlen = sb_size - 8 - 2;
     if (len > maxlen)
       len = maxlen;
-    dump_bytes("SG_IO: desc[]", desc, len);
+    dump_bytes(dev, "SG_IO: desc[]", desc, len);
   }
 
   tf->is_lba48 = desc[2] & 1;
@@ -372,12 +387,12 @@ int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
   }
 
   if (dev->verbose)
-    fprintf(stderr, "      ATA_%u stat=%02x err=%02x nsect=%02x lbal=%02x lbam=%02x lbah=%02x dev=%02x\n",
+    sgio_dbgprintf(dev, "      ATA_%u stat=%02x err=%02x nsect=%02x lbal=%02x lbam=%02x lbah=%02x dev=%02x\n",
             io_hdr.cmd_len, tf->status, tf->error, tf->lob.nsect, tf->lob.lbal, tf->lob.lbam, tf->lob.lbah, tf->dev);
 
   if (tf->status & (ATA_STAT_ERR | ATA_STAT_DRQ)) {
     if (dev->verbose) {
-      fprintf(stderr, "I/O error, ata_op=0x%02x ata_status=0x%02x ata_error=0x%02x\n",
+      sgio_dbgprintf(dev, "I/O error, ata_op=0x%02x ata_status=0x%02x ata_error=0x%02x\n",
               tf->command, tf->status, tf->error);
     }
     errno = EIO;
@@ -441,7 +456,7 @@ int do_drive_cmd(scsi_sg_device *dev, unsigned char *args, unsigned int timeout_
 #endif /* SG_IO */
   if (dev->verbose) {
     if (args)
-      fprintf(stderr, "Trying legacy HDIO_DRIVE_CMD\n");
+      sgio_dbgprintf(dev, "Trying legacy HDIO_DRIVE_CMD\n");
   }
   return ioctl(dev->fd, HDIO_DRIVE_CMD, args);
 }
@@ -492,7 +507,7 @@ int do_taskfile_cmd(scsi_sg_device *dev, struct hdio_taskfile *r, unsigned int t
     if (r->oflags.bits.hob.lbam) tf.hob.lbam = r->hob.lbam;
     if (r->oflags.bits.hob.lbah) tf.hob.lbah = r->hob.lbah;
     if (dev->verbose)
-      fprintf(stderr, "using LBA48 taskfile\n");
+      sgio_dbgprintf(dev, "using LBA48 taskfile\n");
   }
   switch (r->cmd_req) {
     case TASKFILE_CMD_REQ_OUT:
@@ -533,7 +548,7 @@ int do_taskfile_cmd(scsi_sg_device *dev, struct hdio_taskfile *r, unsigned int t
   timeout_secs = 0;	/* keep compiler happy */
 #endif /* SG_IO */
   if (dev->verbose)
-    fprintf(stderr, "trying legacy HDIO_DRIVE_TASKFILE\n");
+    sgio_dbgprintf(dev, "trying legacy HDIO_DRIVE_TASKFILE\n");
   errno = 0;
 
   rc = ioctl(dev->fd, HDIO_DRIVE_TASKFILE, r);
@@ -542,24 +557,24 @@ int do_taskfile_cmd(scsi_sg_device *dev, struct hdio_taskfile *r, unsigned int t
   }
   if (dev->verbose) {
     int err = errno;
-    fprintf(stderr, "rc=%d, errno=%d, returned ATA registers: ", rc, err);
-    if (r->iflags.bits.lob.feat) fprintf(stderr, " er=%02x", r->lob.feat);
-    if (r->iflags.bits.lob.nsect) fprintf(stderr, " ns=%02x", r->lob.nsect);
-    if (r->iflags.bits.lob.lbal) fprintf(stderr, " ll=%02x", r->lob.lbal);
-    if (r->iflags.bits.lob.lbam) fprintf(stderr, " lm=%02x", r->lob.lbam);
-    if (r->iflags.bits.lob.lbah) fprintf(stderr, " lh=%02x", r->lob.lbah);
-    if (r->iflags.bits.lob.dev) fprintf(stderr, " dh=%02x", r->lob.dev);
-    if (r->iflags.bits.lob.command) fprintf(stderr, " st=%02x", r->lob.command);
-    if (r->iflags.bits.hob.feat) fprintf(stderr, " err=%02x", r->hob.feat);
-    if (r->iflags.bits.hob.nsect) fprintf(stderr, " err=%02x", r->hob.nsect);
-    if (r->iflags.bits.hob.lbal) fprintf(stderr, " err=%02x", r->hob.lbal);
-    if (r->iflags.bits.hob.lbam) fprintf(stderr, " err=%02x", r->hob.lbam);
-    if (r->iflags.bits.hob.lbah) fprintf(stderr, " err=%02x", r->hob.lbah);
-    fprintf(stderr, "\n");
+    sgio_dbgprintf(dev, "rc=%d, errno=%d, returned ATA registers: ", rc, err);
+    if (r->iflags.bits.lob.feat) sgio_dbgprintf(dev, " er=%02x", r->lob.feat);
+    if (r->iflags.bits.lob.nsect) sgio_dbgprintf(dev, " ns=%02x", r->lob.nsect);
+    if (r->iflags.bits.lob.lbal) sgio_dbgprintf(dev, " ll=%02x", r->lob.lbal);
+    if (r->iflags.bits.lob.lbam) sgio_dbgprintf(dev, " lm=%02x", r->lob.lbam);
+    if (r->iflags.bits.lob.lbah) sgio_dbgprintf(dev, " lh=%02x", r->lob.lbah);
+    if (r->iflags.bits.lob.dev) sgio_dbgprintf(dev, " dh=%02x", r->lob.dev);
+    if (r->iflags.bits.lob.command) sgio_dbgprintf(dev, " st=%02x", r->lob.command);
+    if (r->iflags.bits.hob.feat) sgio_dbgprintf(dev, " err=%02x", r->hob.feat);
+    if (r->iflags.bits.hob.nsect) sgio_dbgprintf(dev, " err=%02x", r->hob.nsect);
+    if (r->iflags.bits.hob.lbal) sgio_dbgprintf(dev, " err=%02x", r->hob.lbal);
+    if (r->iflags.bits.hob.lbam) sgio_dbgprintf(dev, " err=%02x", r->hob.lbam);
+    if (r->iflags.bits.hob.lbah) sgio_dbgprintf(dev, " err=%02x", r->hob.lbah);
+    sgio_dbgprintf(dev, "\n");
     errno = err;
   }
   if (rc == -1 && errno == EINVAL) {
-    fprintf(stderr, "The running kernel lacks CONFIG_IDE_TASK_IOCTL support for this device.\n");
+    sgio_dbgprintf(dev, "The running kernel lacks CONFIG_IDE_TASK_IOCTL support for this device.\n");
     errno = EINVAL;
   }
   return rc;

@@ -28,7 +28,11 @@ class LinuxDriverHandle : public DriveDriverHandle {
 };
 
 class DriverBase {
+ protected:
+  DriveFactoryOptions options_;
+
  public:
+  DriverBase(const DriveFactoryOptions& options) : options_(options) {}
   virtual ~DriverBase() {}
   virtual DparmReturn<std::unique_ptr<LinuxDriverHandle>> open(const char* path) = 0;
 };

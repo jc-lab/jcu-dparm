@@ -215,14 +215,6 @@ DparmResult DriveHandleBase::doSecurityCommand(int rw, int dma, uint8_t protocol
   return { DPARME_NOT_SUPPORTED, 0 };
 }
 
-void HEX_DUMPS(const void *data, int length) {
-  const unsigned char *u = (const unsigned char*)data;
-  for(int i=0; i<length; i++) {
-    printf("%02x ", u[i]);
-  }
-  printf("\n");
-}
-
 DparmResult DriveHandleBase::tcgDiscovery0() {
   std::vector<unsigned char> buffer(tcg::MIN_BUFFER_LENGTH + tcg::IO_BUFFER_ALIGNMENT);
   unsigned char *buffer_ptr = (unsigned char *)((uintptr_t)(buffer.data() + tcg::IO_BUFFER_ALIGNMENT) & (uintptr_t)~(tcg::IO_BUFFER_ALIGNMENT - 1));

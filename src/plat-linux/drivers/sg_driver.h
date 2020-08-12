@@ -18,7 +18,9 @@ namespace plat_linux {
 namespace drivers {
 
 class SgDriver : public DriverBase {
+
  public:
+  SgDriver(const DriveFactoryOptions& options) : DriverBase(options) {}
   DparmReturn<std::unique_ptr<LinuxDriverHandle>> open(const char *path) override;
 };
 
