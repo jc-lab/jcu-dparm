@@ -23,6 +23,8 @@ namespace dparm {
 
 class DriveHandleBase : public DriveHandle {
  protected:
+  DriveFactoryOptions options_;
+
   std::string device_path_;
   DriveInfo drive_info_;
 
@@ -40,7 +42,7 @@ class DriveHandleBase : public DriveHandle {
     return getDriverHandle()->getNvmeIdentifyDeviceBuf();
   }
 
-  DriveHandleBase(const std::string& device_path, const DparmResult& open_result);
+  DriveHandleBase(const DriveFactoryOptions& options, const std::string& device_path, const DparmResult& open_result);
 
   std::string readString(const unsigned char *buffer, int length, bool trim_right = true);
 
@@ -55,7 +57,7 @@ class DriveHandleBase : public DriveHandle {
   void afterOpen();
   int parseIdentifyDevice();
 
-  DparmReturn<SanitizeCmdResult> doSanitizeCmd(SanitizeFeature feature);
+  DparmReturn<SanitizeCmdResult> doSanitizeCmd(const SanitizeOptions& options) override;
 
   DparmResult doSecurityCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) override;
 

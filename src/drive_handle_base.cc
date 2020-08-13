@@ -16,8 +16,8 @@
 namespace jcu {
 namespace dparm {
 
-DriveHandleBase::DriveHandleBase(const std::string& device_path, const DparmResult& open_result)
-    : device_path_(device_path)
+DriveHandleBase::DriveHandleBase(const DriveFactoryOptions& options, const std::string& device_path, const DparmResult& open_result)
+    : options_(options), device_path_(device_path)
 {
   drive_info_.device_path = device_path_;
   drive_info_.open_result = open_result;

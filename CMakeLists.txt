@@ -117,3 +117,4 @@ target_include_directories(${PROJECT_NAME}
 ##    add_subdirectory(test)
 #endif ()
 
+add_subdirectory(test)

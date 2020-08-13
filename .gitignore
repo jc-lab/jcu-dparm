@@ -12,3 +12,7 @@ _deps
 
 cmake-build-*
 .idea
+
+cmake-build-debug
+cmake-build-debug-remote3
+cmake-build-debug-remote206

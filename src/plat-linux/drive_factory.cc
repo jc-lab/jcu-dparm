@@ -41,8 +41,8 @@ class LinuxDriveHandle : public DriveHandleBase {
   }
 
  public:
-  LinuxDriveHandle(const std::string& path, std::unique_ptr<LinuxDriverHandle> handle, DparmResult open_result)
-      : DriveHandleBase(path, open_result), handle_(std::move(handle)), last_error_(open_result) {
+  LinuxDriveHandle(const DriveFactoryOptions& options, const std::string& path, std::unique_ptr<LinuxDriverHandle> handle, DparmResult open_result)
+      : DriveHandleBase(options, path, open_result), handle_(std::move(handle)), last_error_(open_result) {
   }
 
   void init() {
@@ -88,7 +88,7 @@ class LinuxDriveFactory : public DriveFactory {
       }
     }
 
-    std::unique_ptr<LinuxDriveHandle> drive_handle(new LinuxDriveHandle(drive_path, std::move(driver_handle.value), driver_handle));
+    std::unique_ptr<LinuxDriveHandle> drive_handle(new LinuxDriveHandle(options_, drive_path, std::move(driver_handle.value), driver_handle));
     if (driver_handle.isOk()) {
       drive_handle->init();
     }

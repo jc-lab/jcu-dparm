@@ -41,8 +41,8 @@ class Win32DriveHandle : public DriveHandleBase {
   }
 
  public:
-  Win32DriveHandle(const std::string &path, std::unique_ptr<WindowsDriverHandle> handle, DparmResult open_result)
-      : DriveHandleBase(path, open_result), handle_(std::move(handle)), last_error_(open_result) {
+  Win32DriveHandle(const DriveFactoryOptions& options, const std::string &path, std::unique_ptr<WindowsDriverHandle> handle, DparmResult open_result)
+      : DriveHandleBase(options, path, open_result), handle_(std::move(handle)), last_error_(open_result) {
   }
 
   void init() {
