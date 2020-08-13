@@ -118,5 +118,3 @@ target_include_directories(${PROJECT_NAME}
 #    enable_testing()
 ##    add_subdirectory(test)
 #endif ()
-
-add_subdirectory(test)
