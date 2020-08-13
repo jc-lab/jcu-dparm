@@ -24,14 +24,17 @@ enum DparmCode {
   DPARME_ILLEGAL_DATA = 11,
   DPARME_IOCTL_FAILED = 21,
   DPARME_ATA_FAILED = 31,
+  DPARME_NVME_FAILED = 34,
 };
 
 struct DparmResult {
   DparmCode code;
   int sys_error;
+  int32_t drive_status;
 
-  DparmResult() : code(DPARME_OK), sys_error(0) {}
-  DparmResult(DparmCode code, int sys_error) : code(code), sys_error(sys_error) {}
+  DparmResult() : code(DPARME_OK), sys_error(0), drive_status(0) {}
+  DparmResult(DparmCode code, int sys_error) : code(code), sys_error(sys_error), drive_status(0) {}
+  DparmResult(DparmCode code, int sys_error, int32_t drive_status) : code(code), sys_error(sys_error), drive_status(drive_status) {}
 
   bool isOk() const {
     return code == DPARME_OK;
@@ -44,8 +47,11 @@ struct DparmReturn : DparmResult {
 
   DparmReturn() : DparmResult(DPARME_OK, 0), value() {}
   DparmReturn(DparmCode _code, int _sys_error) : DparmResult(_code, _sys_error), value() {}
-  DparmReturn(DparmCode _code, int _sys_error, const T& _value) : DparmResult(_code, _sys_error), value(_value) {}
-  DparmReturn(DparmCode _code, int _sys_error, T&& _value) : DparmResult(_code, _sys_error), value(std::move(_value)) {}
+  DparmReturn(DparmCode _code, int _sys_error, int32_t _drive_status) : DparmResult(_code, _sys_error, _drive_status), value() {}
+  DparmReturn(DparmCode _code, int _sys_error, int32_t _drive_status, const T& _value) : DparmResult(_code, _sys_error, _drive_status), value(_value) {}
+  DparmReturn(DparmCode _code, int _sys_error, int32_t _drive_status, T&& _value) : DparmResult(_code, _sys_error, _drive_status), value(std::move(_value)) {}
+  DparmReturn(const DparmResult& _result, const T& _value) : DparmResult(_result), value(_value) {}
+  DparmReturn(const DparmResult& _result, T&& _value) : DparmResult(_result), value(std::move(_value)) {}
 };
 
 } // namespace dparm

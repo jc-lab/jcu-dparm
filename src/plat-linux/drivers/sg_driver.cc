@@ -102,7 +102,7 @@ DparmReturn<std::unique_ptr<LinuxDriverHandle>> SgDriver::open(const char *path)
     }
 
     std::unique_ptr<SgDriverHandle> driver_handle(new SgDriverHandle(dev, &temp));
-    return {DPARME_OK, 0, std::move(driver_handle)};
+    return {DPARME_OK, 0, 0, std::move(driver_handle)};
   } while (0);
 
   if (dev.fd > 0) {

@@ -23,6 +23,7 @@ DriveHandleBase::DriveHandleBase(const DriveFactoryOptions& options, const std::
   drive_info_.device_path = device_path_;
   drive_info_.open_result = open_result;
 }
+
 int DriveHandleBase::dbgprintf(const char* fmt, ...) {
   std::vector<char> buffer(strlen(fmt) + 256);
   va_list args;
@@ -34,7 +35,6 @@ int DriveHandleBase::dbgprintf(const char* fmt, ...) {
   }
   return 0;
 }
-
 
 std::string DriveHandleBase::readString(const unsigned char *buffer, int length, bool trim_right) {
   std::string out;
@@ -195,6 +195,56 @@ int DriveHandleBase::parseIdentifyDevice() {
   }
 
   return 0;
+}
+
+DparmResult DriveHandleBase::doNvmeGetLogPageCmd(
+    uint32_t nsid, uint8_t log_id,
+    uint8_t lsp, uint64_t lpo, uint16_t lsi,
+    bool rae, uint8_t uuid_ix,
+    uint32_t data_len, void *data) {
+  uint32_t numd = (data_len >> 2U) - 1;
+  uint32_t numdh = (numd >> 16U) & 0xffffU;
+  uint32_t numdl = numd & 0xffffU;
+  uint32_t cdw10 = log_id | (numdl << 16U) | (rae ? 1U << 15U : 0) | (((uint32_t)lsp) << 8U);
+
+  nvme::nvme_admin_cmd_t cmd = { 0 };
+  cmd.opcode = nvme::NVME_ADMIN_OP_GET_LOG_PAGE;
+  cmd.nsid = nsid;
+  cmd.addr = (uint64_t)data;
+  cmd.data_len = data_len;
+  cmd.cdw10 = cdw10;
+  cmd.cdw11 = numdh | (lsi << 16U);
+  cmd.cdw12 = (uint32_t)(lpo);
+  cmd.cdw13 = (uint32_t)(lpo >> 32U);
+  cmd.cdw14 = uuid_ix;
+
+  return getDriverHandle()->doNvmeAdminPassthru(&cmd);
+}
+
+DparmResult DriveHandleBase::doNvmeGetLogPage(uint32_t nsid, uint8_t log_id, bool rae, uint32_t data_len, void *data) {
+  uint32_t offset = 0, xfer_len = data_len;
+  uint8_t *ptr = (uint8_t*)data;
+  DparmResult ret;
+
+  /*
+   * 4k is the smallest possible transfer unit, so by
+   * restricting ourselves for 4k transfers we avoid having
+   * to check the MDTS value of the controller.
+   */
+  do {
+    xfer_len = data_len - offset;
+    if (xfer_len > 4096)
+      xfer_len = 4096;
+
+    ret = doNvmeGetLogPageCmd(nsid, log_id, nvme::NVME_NO_LOG_LSP, offset, 0, rae, 0, xfer_len, ptr);
+    if (!ret.isOk())
+      break;
+
+    offset += xfer_len;
+    ptr += xfer_len;
+  } while (offset < data_len);
+
+  return ret;
 }
 
 DparmResult DriveHandleBase::doSecurityCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) {

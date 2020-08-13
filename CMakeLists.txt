@@ -21,10 +21,12 @@ set(INC_FILES
         ${INC_DIR}/ata_types.h
         ${INC_DIR}/ata_utils.h
         ${INC_DIR}/nvme_types.h
+        ${INC_DIR}/nvme_utils.h
         )
 
 set(SRC_FILES
         ${SRC_DIR}/ata_utils.cc
+        ${SRC_DIR}/nvme_utils.cc
         ${SRC_DIR}/drive_driver_handle.h
         ${SRC_DIR}/drive_handle_base.h
         ${SRC_DIR}/drive_handle_base.cc

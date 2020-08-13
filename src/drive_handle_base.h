@@ -59,7 +59,41 @@ class DriveHandleBase : public DriveHandle {
   void afterOpen();
   int parseIdentifyDevice();
 
+ public:
+  DparmResult doTaskfileCmd(
+      int rw,
+      int dma,
+      ata::ata_tf_t *tf,
+      void *data,
+      unsigned int data_bytes,
+      unsigned int timeout_secs
+  ) override {
+    return getDriverHandle()->doTaskfileCmd(rw, dma, tf, data, data_bytes, timeout_secs);
+  }
+
+  DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t* cmd) override {
+    return getDriverHandle()->doNvmeAdminPassthru(cmd);
+  }
+
+  DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t* cmd) override {
+    return getDriverHandle()->doNvmeIoPassthru(cmd);
+  }
+
+  DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t* io) override {
+    return getDriverHandle()->doNvmeIo(io);
+  }
+
+  DparmResult doNvmeGetLogPageCmd(
+      uint32_t nsid, uint8_t log_id,
+      uint8_t lsp, uint64_t lpo, uint16_t lsi,
+      bool rae, uint8_t uuid_ix,
+      uint32_t data_len, void *data) override;
+
+  DparmResult doNvmeGetLogPage(uint32_t nsid, uint8_t log_id, bool rae, uint32_t data_len, void *data) override;
+
   DparmReturn<SanitizeCmdResult> doSanitizeCmd(const SanitizeOptions& options) override;
+  DparmReturn<SanitizeEstimates> getSanitizeEstimates() override;
+  DparmResult doNvmeGetSanitizeStatus(SanitizeCmdResult* sanitize_result, SanitizeEstimates* estimates);
 
   DparmResult doSecurityCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) override;
 

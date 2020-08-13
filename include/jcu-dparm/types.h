@@ -121,6 +121,27 @@ enum SanitizeFeature {
   kSanitizeOverwrite = (1U << 5U),
 };
 
+struct SanitizeOptions {
+  SanitizeFeature feature;
+  int overwrite_pass;
+  uint32_t overwrite_pattern;
+  bool no_deallocate;
+
+  SanitizeOptions() {
+    feature = kSanitizeStatus;
+    no_deallocate = false;
+    overwrite_pattern = 0x00;
+    overwrite_pass = 1;
+  }
+
+  SanitizeOptions(SanitizeFeature sanitize_feature) {
+    feature = sanitize_feature;
+    no_deallocate = 0;
+    overwrite_pattern = 0x00;
+    overwrite_pass = 1;
+  }
+};
+
 enum SanitizeState {
   kSanitizeIdle = (1U << 0U), // SD0, Duplicatable
   kSanitizeInFrozen = (1U << 1U), // SD1
@@ -143,6 +164,29 @@ struct SanitizeCmdResult {
   uint8_t raw_state; // ata::SanitizeFlag / NVMe SSTAT
   SanitizeState sanitize_states;
   float progress;
+
+  bool isRunning() const {
+    return (sanitize_states & kSanitizeOperationInProgress) != 0;
+  }
+};
+
+/**
+ * Seconds unit
+ * -1 = No reported
+ */
+struct SanitizeEstimates {
+  int32_t security_erase;
+  int32_t enhanced_security_erase;
+  int32_t overwrite_time;
+  int32_t block_erase_time;
+  int32_t crypto_erase_time;
+  SanitizeEstimates() {
+    security_erase = -1;
+    enhanced_security_erase = -1;
+    overwrite_time = -1;
+    block_erase_time = -1;
+    crypto_erase_time = -1;
+  }
 };
 
 } // namespace dparm

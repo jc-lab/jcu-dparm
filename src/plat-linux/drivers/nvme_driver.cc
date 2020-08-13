@@ -81,7 +81,10 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     if (rc == -1) {
       return { DPARME_IOCTL_FAILED, errno };
     }
-    return { DPARME_OK, 0, rc };
+    if (rc) {
+      return { DPARME_NVME_FAILED, 0, rc, {} };
+    }
+    return { DPARME_OK, 0, rc, rc };
   }
 
   DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t *cmd) override {
@@ -108,7 +111,10 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     if (rc == -1) {
       return { DPARME_IOCTL_FAILED, errno };
     }
-    return { DPARME_OK, 0, rc };
+    if (rc) {
+      return { DPARME_NVME_FAILED, 0, rc, {} };
+    }
+    return { DPARME_OK, 0, rc, rc };
   }
 
   DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t *io) override {
@@ -129,7 +135,10 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     if (rc == -1) {
       return { DPARME_IOCTL_FAILED, errno };
     }
-    return { DPARME_OK, 0, rc };
+    if (rc) {
+      return { DPARME_NVME_FAILED, 0, rc, {} };
+    }
+    return { DPARME_OK, 0, rc, rc };
   }
 };
 
@@ -155,7 +164,7 @@ DparmReturn<std::unique_ptr<LinuxDriverHandle>> NvmeDriver::open(const char *pat
     std::unique_ptr<NvmeDriverHandle> driver_handle(new NvmeDriverHandle(fd, nsid));
     auto identify_result = driver_handle->readIdentify();
     result = identify_result;
-    return {result.code, result.sys_error, std::move(driver_handle)};
+    return {result.code, result.sys_error, result.drive_status, std::move(driver_handle)};
   } while (0);
 
   if (fd > 0) {
