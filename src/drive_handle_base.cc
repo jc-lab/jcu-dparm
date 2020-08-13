@@ -8,6 +8,7 @@
  */
 
 #include <string.h>
+#include <stdarg.h>
 
 #include "drive_handle_base.h"
 
@@ -22,6 +23,18 @@ DriveHandleBase::DriveHandleBase(const DriveFactoryOptions& options, const std::
   drive_info_.device_path = device_path_;
   drive_info_.open_result = open_result;
 }
+int DriveHandleBase::dbgprintf(const char* fmt, ...) {
+  std::vector<char> buffer(strlen(fmt) + 256);
+  va_list args;
+  va_start(args, fmt);
+  int length = vsnprintf(buffer.data(), buffer.size(), fmt, args);
+  va_end(args);
+  if (options_.debug_puts) {
+    return options_.debug_puts(std::string(buffer.data(), length));
+  }
+  return 0;
+}
+
 
 std::string DriveHandleBase::readString(const unsigned char *buffer, int length, bool trim_right) {
   std::string out;

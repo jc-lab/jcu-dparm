@@ -44,6 +44,8 @@ class DriveHandleBase : public DriveHandle {
 
   DriveHandleBase(const DriveFactoryOptions& options, const std::string& device_path, const DparmResult& open_result);
 
+  int dbgprintf(const char* fmt, ...);
+
   std::string readString(const unsigned char *buffer, int length, bool trim_right = true);
 
   std::string readStringRange(const unsigned char *buffer, int begin, int end, bool trim_right = true);
