@@ -20,9 +20,8 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/sysmacros.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <linux/limits.h>
 
 #include "sysfs_utils.h"
 
