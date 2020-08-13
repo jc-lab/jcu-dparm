@@ -95,7 +95,6 @@ std::string DriveHandleBase::fixAtaStringOrder(const unsigned char *buffer, int 
 std::string DriveHandleBase::trimString(const std::string &input) {
   const char *begin = input.c_str();
   int length = input.length();
-  const char *end = begin + input.length() - 1;
 
   while ((*begin == ' ') || (*begin == '\r') || (*begin == '\n') || (*begin == '\t')) {
     begin++;
@@ -103,11 +102,13 @@ std::string DriveHandleBase::trimString(const std::string &input) {
   }
 
   while ((length > 0) && ((begin[length - 1] == ' ') || (begin[length - 1] == '\r') || (begin[length - 1] == '\n') || (begin[length - 1] == '\t'))) {
-    end--;
     length--;
   }
 
-  return std::string(begin, end);
+  if (length > 0) {
+    return std::string(begin, length);
+  }
+  return std::string();
 }
 
 uint64_t DriveHandleBase::fixAtaUint64Order(const void *buffer) {
