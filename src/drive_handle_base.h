@@ -46,16 +46,6 @@ class DriveHandleBase : public DriveHandle {
 
   int dbgprintf(const char* fmt, ...);
 
-  std::string readString(const unsigned char *buffer, int length, bool trim_right = true);
-
-  std::string readStringRange(const unsigned char *buffer, int begin, int end, bool trim_right = true);
-
-  std::string fixAtaStringOrder(const unsigned char *buffer, int length, bool trim_right = true);
-
-  std::string trimString(const std::string &input);
-
-  uint64_t fixAtaUint64Order(const void *buffer);
-
   void afterOpen();
   int parseIdentifyDevice();
 

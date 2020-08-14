@@ -32,6 +32,7 @@ set(SRC_FILES
         ${SRC_DIR}/drive_handle_base.cc
         ${SRC_DIR}/drive_handle_sanitize.cc
         ${SRC_DIR}/intl_utils.h
+        ${SRC_DIR}/intl_utils.cc
         ${SRC_DIR}/tcg/tcg_device.h
         ${SRC_DIR}/tcg/tcg_device.cc
         ${SRC_DIR}/tcg/tcg_command.h

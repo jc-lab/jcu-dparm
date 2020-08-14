@@ -154,9 +154,9 @@ int DriveHandleBase::parseIdentifyDevice() {
     drive_info_.ssd_check_weight = ssd_check_weight;
     drive_info_.is_ssd = ssd_check_weight > 0;
 
-    drive_info_.model = trimString(fixAtaStringOrder(data.model_number, sizeof(data.model_number), true));
-    drive_info_.firmware_revision = trimString(fixAtaStringOrder(data.firmware_revision, sizeof(data.firmware_revision), true));
-    drive_info_.serial = trimString(fixAtaStringOrder(data.serial_number, sizeof(data.serial_number), true));
+    drive_info_.model = intl::trimString(intl::fixAtaStringOrder(data.model_number, sizeof(data.model_number), true));
+    drive_info_.firmware_revision = intl::trimString(intl::fixAtaStringOrder(data.firmware_revision, sizeof(data.firmware_revision), true));
+    drive_info_.serial = intl::trimString(intl::fixAtaStringOrder(data.serial_number, sizeof(data.serial_number), true));
     if (data.sanitize_feature_supported) {
       drive_info_.support_sanitize_block_erase = data.block_erase_ext_command_supported;
       drive_info_.support_sanitize_crypto_erase = data.crypto_scramble_ext_command_supported;
@@ -181,9 +181,9 @@ int DriveHandleBase::parseIdentifyDevice() {
     drive_info_.nvme_minor_version = (uint8_t)(data.ver >> 8);
     drive_info_.nvme_tertiary_version = (uint8_t)(data.ver);
 
-    drive_info_.serial = readStringRange((const unsigned char *) data.sn, 0, sizeof(data.sn), true);
-    drive_info_.model = readStringRange((const unsigned char *)data.mn, 0, sizeof(data.mn), true);
-    drive_info_.firmware_revision = readStringRange((const unsigned char *)data.fr, 0, sizeof(data.fr), true);
+    drive_info_.serial = intl::readStringRange((const unsigned char *) data.sn, 0, sizeof(data.sn), true);
+    drive_info_.model = intl::readStringRange((const unsigned char *)data.mn, 0, sizeof(data.mn), true);
+    drive_info_.firmware_revision = intl::readStringRange((const unsigned char *)data.fr, 0, sizeof(data.fr), true);
 
     drive_info_.ssd_check_weight = 0;
     drive_info_.is_ssd = true;
