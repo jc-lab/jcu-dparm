@@ -175,6 +175,7 @@ static DparmResult doTaskfileCmdImpl(
   }
 
   if (is_success && data && data_bytes) {
+    // TODO: Fix it, maybe `if (sense_data.SenseKey)` is correct
     if (sense_data.Valid && sense_data.SenseKey) {
       return { DPARME_NOT_SUPPORTED, 0 };
     }
@@ -324,6 +325,10 @@ class ScsiDriverHandle : public WindowsDriverHandle {
 
   DparmResult doSecurityCommand(uint8_t protocol, uint16_t com_id, int rw, void *buffer, uint32_t len, int timeout) override {
     return ScsiDriver::doSecurityCommandImpl(handle_, protocol, com_id, rw, buffer, len, timeout);
+  }
+
+  DparmReturn<InquiryDeviceResult> inquiryDeviceInfo() override {
+    return getInquiryDeviceInfoImpl(handle_);
   }
 };
 

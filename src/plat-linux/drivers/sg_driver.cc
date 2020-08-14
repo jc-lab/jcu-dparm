@@ -11,8 +11,12 @@
 #include <sys/types.h>
 #include <sys/fcntl.h>
 
+#include <scsi/scsi.h>
+#include <scsi/sg.h>
+#include <sys/ioctl.h>
+
 #include "sg_driver.h"
-#include "driver_utils.h"
+#include "../../intl_utils.h"
 
 #include "../sgio.h"
 
@@ -72,6 +76,61 @@ class SgDriverHandle : public LinuxDriverHandle {
       return { DPARME_SYS, errno };
     }
     return { DPARME_OK, 0 };
+  }
+
+  /**
+   * Reference: https://www.seagate.com/files/staticfiles/support/docs/manual/Interface%20manuals/100293068j.pdf
+   */
+  DparmReturn<InquiryDeviceResult> inquiryDeviceInfo() override {
+    InquiryDeviceResult info = {};
+
+    for (int i=0; i < 2; i++) {
+      int result;
+      struct sg_io_hdr io_hdr;
+      unsigned char payload_buffer[192] = {0};
+      unsigned char sense[32] = {0};
+
+      // Standard INQUIRY
+      unsigned char inq_cmd[] = {
+          INQUIRY, 0, 0, 0, sizeof(payload_buffer), 0
+      };
+      if (i == 1) {
+        inq_cmd[1] = 1;
+        inq_cmd[2] = 0x80;
+      }
+
+      memset(&io_hdr, 0, sizeof(io_hdr));
+      io_hdr.interface_id = 'S';
+      io_hdr.cmdp = inq_cmd;
+      io_hdr.cmd_len = sizeof(inq_cmd);
+      io_hdr.dxferp = payload_buffer;
+      io_hdr.dxfer_len = sizeof(payload_buffer);
+      io_hdr.dxfer_direction = SG_DXFER_FROM_DEV;
+      io_hdr.sbp = sense;
+      io_hdr.mx_sb_len = sizeof(sense);
+      io_hdr.timeout = 5000;
+
+      result = ioctl(dev_.fd, SG_IO, &io_hdr);
+      if (result < 0) {
+        return {DPARME_IOCTL_FAILED, errno};
+      }
+
+      if ((io_hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK) {
+        return {DPARME_IOCTL_FAILED, 0, (int32_t) io_hdr.info};
+      }
+
+      // fixed length... It may not be the full name.
+
+      if (i == 0) {
+        info.vendor_identification = intl::trimString(intl::readString(&payload_buffer[8], 8));
+        info.product_identification = intl::trimString(intl::readString(&payload_buffer[16], 16));
+        info.product_revision_level = intl::trimString(intl::readString(&payload_buffer[32], 4));
+      } else {
+        info.drive_serial_number = intl::trimString(intl::readString(&payload_buffer[4], payload_buffer[3]));
+      }
+    }
+
+    return { DPARME_OK, 0, 0, info };
   }
 };
 

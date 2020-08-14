@@ -36,95 +36,17 @@ int DriveHandleBase::dbgprintf(const char* fmt, ...) {
   return 0;
 }
 
-std::string DriveHandleBase::readString(const unsigned char *buffer, int length, bool trim_right) {
-  std::string out;
-  int out_len = 0;
-  out.resize(length);
-
-  for (int i = 0; i < length; i++) {
-    out[i] = buffer[i];
-    if (out[i])
-      out_len++;
-    else
-      break;
-  }
-
-  if (trim_right) {
-    while ((out_len > 0) && (out[out_len - 1] == 0x20)) {
-      out_len--;
-    }
-  }
-
-  out.resize(out_len);
-  return out;
-}
-
-std::string DriveHandleBase::readStringRange(const unsigned char *buffer, int begin, int end, bool trim_right) {
-  int length = end - begin;
-  return readString(buffer + begin, length, trim_right);
-}
-
-std::string DriveHandleBase::fixAtaStringOrder(const unsigned char *buffer, int length, bool trim_right) {
-  std::string out;
-  int out_len = 0;
-  out.resize(length);
-
-  for (int i = 0; i < length; i+= 2) {
-    out[i] = buffer[i + 1];
-    out[i + 1] = buffer[i];
-    if (out[i])
-      out_len++;
-    else
-      break;
-    if (out[i + 1])
-      out_len++;
-    else
-      break;
-  }
-
-  if (trim_right) {
-    while ((out_len > 0) && (out[out_len - 1] == 0x20)) {
-      out_len--;
-    }
-  }
-
-  out.resize(out_len);
-  return out;
-}
-
-std::string DriveHandleBase::trimString(const std::string &input) {
-  const char *begin = input.c_str();
-  int length = input.length();
-
-  while ((*begin == ' ') || (*begin == '\r') || (*begin == '\n') || (*begin == '\t')) {
-    begin++;
-    length--;
-  }
-
-  while ((length > 0) && ((begin[length - 1] == ' ') || (begin[length - 1] == '\r') || (begin[length - 1] == '\n') || (begin[length - 1] == '\t'))) {
-    length--;
-  }
-
-  if (length > 0) {
-    return std::string(begin, length);
-  }
-  return std::string();
-}
-
-uint64_t DriveHandleBase::fixAtaUint64Order(const void *buffer) {
-  const unsigned char *ptr = (const unsigned char *)buffer;
-  uint64_t out = 0;
-  for(int i=0; i<4; i++) {
-    out |= ptr[i * 2] << (i * 2 * 8);
-    out |= ptr[i * 2 + 1] << ((i * 2 + 1) * 8);
-  }
-  return out;
-}
-
 void DriveHandleBase::afterOpen() {
   auto driver_handle = getDriverHandle();
   drive_info_.driving_type = driver_handle->getDrivingType();
   parseIdentifyDevice();
+  if (drive_info_.serial.empty()) {
+    auto res = driver_handle->inquiryDeviceInfo();
+    if (res.isOk()) {
+      drive_info_.serial = res.value.drive_serial_number;
+      drive_info_.model = res.value.product_identification;
+    }
+  }
   tcgDiscovery0();
 }
 

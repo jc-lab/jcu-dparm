@@ -172,6 +172,10 @@ class AtaDrvierHandle : public WindowsDriverHandle {
   ) override {
     return doTaskfileCmdImpl(handle_, rw, dma, tf, data, data_bytes, timeout_secs);
   }
+
+  DparmReturn<InquiryDeviceResult> inquiryDeviceInfo() override {
+    return getInquiryDeviceInfoImpl(handle_);
+  }
 };
 
 DparmReturn<std::unique_ptr<WindowsDriverHandle>> AtaDriver::open(const char *path) {

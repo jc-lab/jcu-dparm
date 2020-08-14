@@ -13,12 +13,16 @@
 #include <string>
 #include <tchar.h>
 
+#include "../driver_base.h"
+
 namespace jcu {
 namespace dparm {
 namespace plat_win {
 namespace drivers {
 
 int getScsiPath(std::basic_string<TCHAR> *pout, const std::basic_string<TCHAR>& str_path);
+
+DparmReturn<InquiryDeviceResult> getInquiryDeviceInfoImpl(HANDLE handle);
 
 } //namespace drivers
 } //namespace plat_win

@@ -20,6 +20,13 @@
 namespace jcu {
 namespace dparm {
 
+struct InquiryDeviceResult {
+  std::string vendor_identification;
+  std::string product_identification;
+  std::string product_revision_level;
+  std::string drive_serial_number;
+};
+
 class DriveDriverHandle {
  protected:
   DrivingType driving_type_;
@@ -48,6 +55,10 @@ class DriveDriverHandle {
 
   const std::vector<unsigned char> &getNvmeIdentifyDeviceBuf() const {
     return nvme_identify_device_buf_;
+  }
+
+  virtual DparmReturn<InquiryDeviceResult> inquiryDeviceInfo() {
+    return { DPARME_NOT_SUPPORTED, 0 };
   }
 
   virtual DparmResult doTaskfileCmd(

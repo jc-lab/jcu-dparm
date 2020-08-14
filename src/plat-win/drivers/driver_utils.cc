@@ -7,10 +7,11 @@
  *            of the Apache License 2.0.  See the LICENSE file for details.
  */
 
-#include "driver_utils.h"
-
 #include <windows.h>
 #include <ntddscsi.h>
+
+#include "driver_utils.h"
+#include "../../intl_utils.h"
 
 namespace jcu {
 namespace dparm {
@@ -57,6 +58,60 @@ int getScsiPath(std::basic_string<TCHAR> *pout, const std::basic_string<TCHAR>& 
   *pout = std::basic_string<TCHAR>(result_buf);
 
   return 0;
+}
+
+DparmReturn<InquiryDeviceResult> getInquiryDeviceInfoImpl(HANDLE handle) {
+  InquiryDeviceResult info = {};
+  std::vector<unsigned char> payload_buffer(4096);
+
+  STORAGE_PROPERTY_QUERY storage_property_query;
+  PSTORAGE_DEVICE_DESCRIPTOR storage_device_descriptor = (PSTORAGE_DEVICE_DESCRIPTOR)payload_buffer.data();
+  DWORD read_bytes;
+  ZeroMemory(&storage_property_query, sizeof(STORAGE_PROPERTY_QUERY));
+  storage_property_query.PropertyId = StorageDeviceProperty;
+  storage_property_query.QueryType = PropertyStandardQuery;
+  if (!DeviceIoControl(
+      handle, IOCTL_STORAGE_QUERY_PROPERTY,
+      &storage_property_query, sizeof(storage_property_query),
+      storage_device_descriptor, payload_buffer.size(),
+      &read_bytes, NULL)) {
+    return { DPARME_IOCTL_FAILED, (int)::GetLastError() };
+  }
+
+  if (storage_device_descriptor->VendorIdOffset > 0) {
+    // TODO: Not sure...
+    info.vendor_identification = intl::trimString(intl::readStringRange(
+        payload_buffer.data(),
+        storage_device_descriptor->VendorIdOffset,
+        payload_buffer.size(),
+        true));
+  }
+
+  if (storage_device_descriptor->ProductIdOffset > 0) {
+    info.product_identification = intl::trimString(intl::readStringRange(
+        payload_buffer.data(),
+        storage_device_descriptor->ProductIdOffset,
+        payload_buffer.size(),
+        true));
+  }
+
+  if (storage_device_descriptor->SerialNumberOffset > 0) {
+    info.drive_serial_number = intl::trimString(intl::readStringRange(
+        payload_buffer.data(),
+        storage_device_descriptor->SerialNumberOffset,
+        payload_buffer.size(),
+        true));
+  }
+
+  if (storage_device_descriptor->ProductRevisionOffset > 0) {
+    info.product_revision_level = intl::trimString(intl::readStringRange(
+        payload_buffer.data(),
+        storage_device_descriptor->ProductRevisionOffset,
+        payload_buffer.size(),
+        true));
+  }
+
+  return { DPARME_OK, 0, 0, info };
 }
 
 } //namespace drivers
