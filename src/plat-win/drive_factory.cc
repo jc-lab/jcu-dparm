@@ -91,7 +91,7 @@ class Win32DriveFactory : public DriveFactory {
       }
     }
 
-    std::unique_ptr<Win32DriveHandle> drive_handle(new Win32DriveHandle(drive_path, std::move(driver_handle.value), driver_handle));
+    std::unique_ptr<Win32DriveHandle> drive_handle(new Win32DriveHandle(options_, drive_path, std::move(driver_handle.value), driver_handle));
     if (driver_handle.isOk()) {
       drive_handle->init();
     }
@@ -110,7 +110,7 @@ class Win32DriveFactory : public DriveFactory {
       }
     }
 
-    std::unique_ptr<Win32DriveHandle> drive_handle(new Win32DriveHandle(found_device_path, std::move(driver_handle.value), driver_handle));
+    std::unique_ptr<Win32DriveHandle> drive_handle(new Win32DriveHandle(options_, found_device_path, std::move(driver_handle.value), driver_handle));
     if (driver_handle.isOk()) {
       drive_handle->init();
     }

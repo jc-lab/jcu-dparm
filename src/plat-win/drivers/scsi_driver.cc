@@ -353,7 +353,7 @@ DparmReturn<std::unique_ptr<WindowsDriverHandle>> ScsiDriver::open(const char *p
     }
 
     std::unique_ptr<ScsiDriverHandle> driver_handle(new ScsiDriverHandle(path, drive_handle, &temp));
-    return {DPARME_OK, 0, std::move(driver_handle)};
+    return {DPARME_OK, 0, 0, std::move(driver_handle)};
   } while (0);
 
   if (drive_handle && (drive_handle != INVALID_HANDLE_VALUE)) {

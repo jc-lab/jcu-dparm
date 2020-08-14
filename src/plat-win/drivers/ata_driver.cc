@@ -200,7 +200,7 @@ DparmReturn<std::unique_ptr<WindowsDriverHandle>> AtaDriver::open(const char *pa
     }
 
     std::unique_ptr<AtaDrvierHandle> driver_handle(new AtaDrvierHandle(path, drive_handle, &temp));
-    return {DPARME_OK, 0, std::move(driver_handle)};
+    return {DPARME_OK, 0, 0, std::move(driver_handle)};
   } while (0);
 
   if (drive_handle && (drive_handle != INVALID_HANDLE_VALUE)) {

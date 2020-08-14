@@ -87,7 +87,7 @@ DparmReturn<std::unique_ptr<WindowsDriverHandle>> WindowsNvmeDriver::open(const 
     }
 
     std::unique_ptr<WindowsNvmeDriverHandle> driver_handle(new WindowsNvmeDriverHandle(path, drive_handle, &nptwb));
-    return {DPARME_OK, 0, std::move(driver_handle)};
+    return {DPARME_OK, 0, 0, std::move(driver_handle)};
   } while (0);
 
   if (drive_handle && (drive_handle != INVALID_HANDLE_VALUE)) {
