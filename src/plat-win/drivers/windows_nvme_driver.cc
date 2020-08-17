@@ -66,6 +66,11 @@ DparmReturn<std::unique_ptr<WindowsDriverHandle>> WindowsNvmeDriver::open(const 
         drive_path.c_str(), GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
     );
+    if (!drive_handle || (drive_handle == INVALID_HANDLE_VALUE)) {
+      werr = (int) ::GetLastError();
+      break;
+    }
+
     windows10::TStorageQueryWithBuffer nptwb;
     DWORD dwReturned = 0;
 
