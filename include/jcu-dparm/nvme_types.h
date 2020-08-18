@@ -329,7 +329,14 @@ typedef struct nvme_identify_controller {
   u8_t			cmic;
   u8_t			mdts;
   le16_t			cntlid;
-  le32_t			ver;
+  union {
+    le32_t ver;
+    struct {
+      uint8_t tertiary_version;
+      uint8_t minor_version;
+      uint16_t major_version;
+    };
+  };
   le32_t			rtd3r;
   le32_t			rtd3e;
   le32_t			oaes;

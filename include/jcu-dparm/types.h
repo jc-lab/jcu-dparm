@@ -50,10 +50,6 @@ struct DriveInfo {
   ata::ata_identify_device_data_t ata_identify;
   nvme::nvme_identify_controller_t nvme_identify_ctrl;
 
-  unsigned char nvme_major_version;
-  unsigned char nvme_minor_version;
-  unsigned char nvme_tertiary_version;
-
   bool is_ssd;
   int ssd_check_weight;
 
