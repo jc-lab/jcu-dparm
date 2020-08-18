@@ -80,13 +80,19 @@ int DriveHandleBase::parseIdentifyDevice() {
     drive_info_.firmware_revision = intl::trimString(intl::fixAtaStringOrder(data.firmware_revision, sizeof(data.firmware_revision), true));
     drive_info_.serial = intl::trimString(intl::fixAtaStringOrder(data.serial_number, sizeof(data.serial_number), true));
     if (data.sanitize_feature_supported) {
-      drive_info_.support_sanitize_block_erase = data.block_erase_ext_command_supported;
-      drive_info_.support_sanitize_crypto_erase = data.crypto_scramble_ext_command_supported;
-      drive_info_.support_sanitize_overwrite = data.overwrite_ext_command_supported;
+      if (data.security_status.security_enabled) {
+        drive_info_.support_sanitize_block_erase = data.block_erase_ext_command_supported ? 1 : 0;
+        drive_info_.support_sanitize_crypto_erase = data.crypto_scramble_ext_command_supported ? 1 : 0;
+        drive_info_.support_sanitize_overwrite = data.overwrite_ext_command_supported ? 1 : 0;
+      } else {
+        drive_info_.support_sanitize_block_erase = data.block_erase_ext_command_supported ? 2 : 0;
+        drive_info_.support_sanitize_crypto_erase = data.crypto_scramble_ext_command_supported ? 2 : 0;
+        drive_info_.support_sanitize_overwrite = data.overwrite_ext_command_supported ? 2 : 0;
+      }
     }else{
-      drive_info_.support_sanitize_block_erase = false;
-      drive_info_.support_sanitize_crypto_erase = false;
-      drive_info_.support_sanitize_overwrite = false;
+      drive_info_.support_sanitize_block_erase = 0;
+      drive_info_.support_sanitize_crypto_erase = 0;
+      drive_info_.support_sanitize_overwrite = 0;
     }
   }else if (driver_handle->getDrivingType() == kDrivingNvme) {
     nvme::nvme_identify_controller_t data;
@@ -98,10 +104,6 @@ int DriveHandleBase::parseIdentifyDevice() {
 
     memcpy(&data, raw.data(), sizeof(data));
     drive_info_.nvme_identify_ctrl = data;
-
-    drive_info_.nvme_major_version = (uint8_t)(data.ver >> 16);
-    drive_info_.nvme_minor_version = (uint8_t)(data.ver >> 8);
-    drive_info_.nvme_tertiary_version = (uint8_t)(data.ver);
 
     drive_info_.serial = intl::readStringRange((const unsigned char *) data.sn, 0, sizeof(data.sn), true);
     drive_info_.model = intl::readStringRange((const unsigned char *)data.mn, 0, sizeof(data.mn), true);

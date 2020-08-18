@@ -53,9 +53,15 @@ struct DriveInfo {
   bool is_ssd;
   int ssd_check_weight;
 
-  bool support_sanitize_crypto_erase;
-  bool support_sanitize_block_erase;
-  bool support_sanitize_overwrite;
+  /**
+   * 0 : Not supported
+   * 1 : Supported
+   * 2 : Supported but need tcg
+   */
+
+  int support_sanitize_crypto_erase;
+  int support_sanitize_block_erase;
+  int support_sanitize_overwrite;
 
   /**
    * -1 : Not determined (OS Error)
@@ -79,9 +85,6 @@ struct DriveInfo {
     driving_type = kDrivingUnknown;
     memset(&ata_identify, 0, sizeof(ata_identify));
     memset(&nvme_identify_ctrl, 0, sizeof(nvme_identify_ctrl));
-    nvme_major_version = 0;
-    nvme_minor_version = 0;
-    nvme_tertiary_version = 0;
     is_ssd = false;
     ssd_check_weight = 0;
     support_sanitize_crypto_erase = false;
