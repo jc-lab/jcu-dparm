@@ -12,13 +12,14 @@ ATA/NVMe and TCG protocol
 * TCG protocol support
   - Support on ATA, SCSI, Windows NVMe driver
   - nvmewin driver is not tested
+* If the device ― likely USB Flash Memory ― does not support identify, used STORAGE_DEVICE_DESCRIPTOR Instead.
 
 * NVMe passthrough command is not supported yet
 
 ## Linux
 
 * All feature support (sg, nvme driver)
-
+* If the device ― likely USB Flash Memory ― does not support identify, used INQUIRY command Instead.
 
 
 # example
