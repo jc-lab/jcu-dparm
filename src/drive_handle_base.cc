@@ -85,7 +85,7 @@ int DriveHandleBase::parseIdentifyDevice() {
 
     drive_info_.model = intl::trimString(intl::fixAtaStringOrder(data.model_number, sizeof(data.model_number), true));
     drive_info_.firmware_revision = intl::trimString(intl::fixAtaStringOrder(data.firmware_revision, sizeof(data.firmware_revision), true));
-    for (int i = 0; i < sizeof(drive_info_.raw_serial); i++) {
+    for (int i = 0; i < sizeof(drive_info_.raw_serial); i += 2) {
       drive_info_.raw_serial[i] = data.serial_number[i + 1];
       drive_info_.raw_serial[i + 1] = data.serial_number[i];
     }
