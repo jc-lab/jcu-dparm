@@ -66,6 +66,9 @@ DparmResult TcgResponseImpl::commit() {
     } else if (!(*cur & 0x10U)) {
       // long atom
       cur_token_length = (((uint32_t)cur[1] << 16U) | ((uint32_t)cur[2] << 8U) | (uint32_t)cur[3]) + 4;
+    } else {
+      // token
+      cur_token_length = 1;
     }
     temp_token_buffer.clear();
     temp_token_buffer.insert(temp_token_buffer.end(), cur, cur + cur_token_length);

@@ -46,12 +46,12 @@ uint16_t TcgDeviceEnterprise::getNumComIds() const {
   return SWAP16(feature->number_com_ids);
 }
 
-DparmReturn<uint8_t> TcgDeviceEnterprise::revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) {
+DparmReturn<OpalStatusCode> TcgDeviceEnterprise::revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) {
   TcgSessionImpl sess(this);
   TcgCommandImpl cmd;
   TcgResponseImpl resp;
 
-  DparmReturn<uint8_t> dres;
+  DparmReturn<OpalStatusCode> dres;
 
   OpalUID uid = OpalUID::SID_UID;
   if (is_psid) {

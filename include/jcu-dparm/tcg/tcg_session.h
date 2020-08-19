@@ -37,10 +37,10 @@ class TcgSession {
 
   virtual void setTimeout(uint32_t timeout_ms) = 0;
 
-  virtual DparmReturn<uint8_t> start(const OpalUID& sp, const std::string& host_challenge, const std::vector<uint8_t>& sign_authority) = 0;
-  virtual DparmReturn<uint8_t> start(const OpalUID& sp, const std::string& host_challenge, const OpalUID& sign_authority) = 0;
-  virtual DparmReturn<uint8_t> authenticate(const std::vector<uint8_t> &sign_authority, const std::string& challenge) = 0;
-  virtual DparmReturn<uint8_t> sendCommand(TcgCommand& cmd, TcgResponse& resp) = 0;
+  virtual DparmReturn<OpalStatusCode> start(const OpalUID& sp, const std::string& host_challenge, const std::vector<uint8_t>& sign_authority) = 0;
+  virtual DparmReturn<OpalStatusCode> start(const OpalUID& sp, const std::string& host_challenge, const OpalUID& sign_authority) = 0;
+  virtual DparmReturn<OpalStatusCode> authenticate(const std::vector<uint8_t> &sign_authority, const std::string& challenge) = 0;
+  virtual DparmReturn<OpalStatusCode> sendCommand(TcgCommand& cmd, TcgResponse& resp) = 0;
 };
 
 } // namespace tcg

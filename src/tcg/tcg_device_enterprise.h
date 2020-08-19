@@ -24,7 +24,7 @@ class TcgDeviceEnterprise : public TcgDeviceGeneric {
   uint16_t getBaseComId() const override;
   uint16_t getNumComIds() const override;
 
-  DparmReturn<uint8_t> revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) override;
+  DparmReturn<OpalStatusCode> revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) override;
 };
 
 } // namespace tcg

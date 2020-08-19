@@ -148,21 +148,21 @@ bool TcgCommandImpl::complete(bool eod) {
     if (!checkCmdBufWrite(6)) {
       return false;
     }
-    cmd_buf_[cmd_pos_++] = ENDOFDATA;
-    cmd_buf_[cmd_pos_++] = STARTLIST;
-    cmd_buf_[cmd_pos_++] = 0x00;
-    cmd_buf_[cmd_pos_++] = 0x00;
-    cmd_buf_[cmd_pos_++] = 0x00;
-    cmd_buf_[cmd_pos_++] = ENDLIST;
+    cmd_ptr_[cmd_pos_++] = ENDOFDATA;
+    cmd_ptr_[cmd_pos_++] = STARTLIST;
+    cmd_ptr_[cmd_pos_++] = 0x00;
+    cmd_ptr_[cmd_pos_++] = 0x00;
+    cmd_ptr_[cmd_pos_++] = 0x00;
+    cmd_ptr_[cmd_pos_++] = ENDLIST;
   }
   header_->subpkt.length = SWAP32(cmd_pos_ - sizeof(opal_header_t));
   while (cmd_pos_ % 4) {
     if (!checkCmdBufWrite(1)) {
       return false;
     }
-    cmd_buf_[cmd_pos_++] = 0x00;
+    cmd_ptr_[cmd_pos_++] = 0x00;
   }
-  header_->pkt.length = SWAP32(cmd_pos_ - sizeof(opal_com_packet_t) - sizeof(opal_header_t));
+  header_->pkt.length = SWAP32(cmd_pos_ - sizeof(opal_com_packet_t) - sizeof(opal_packet_t));
   header_->cp.length = SWAP32(cmd_pos_ - sizeof(opal_com_packet_t));
   assert(cmd_pos_ <= MAX_BUFFER_LENGTH);
   return true;
@@ -188,6 +188,10 @@ const uint8_t* TcgCommandImpl::getCmdBuf() const {
 }
 
 uint32_t TcgCommandImpl::getCmdSize() const {
+  unsigned int x = cmd_pos_ % 512;
+  if (x) {
+    return (512 - x) + cmd_pos_;
+  }
   return cmd_pos_;
 }
 

@@ -110,6 +110,9 @@ DparmResult TcgDeviceGeneric::exec(const TcgCommand &cmd, TcgResponse &resp, uin
     std::this_thread::sleep_for(std::chrono::milliseconds { 25 });
     resp.reset();
     dres = drive_handle_->doSecurityCommand(0, 0, protocol, getBaseComId(), (void*)resp_header, resp.getRespBufSize());
+    if (!dres.isOk()) {
+      return dres;
+    }
     if (spent_time > timeout_duration) {
       // TIMEOUT!
       break;
@@ -128,7 +131,7 @@ DparmResult TcgDeviceGeneric::exec(const TcgCommand &cmd, TcgResponse &resp, uin
   return dres;
 }
 
-DparmReturn<uint8_t> TcgDeviceGeneric::revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) {
+DparmReturn<OpalStatusCode> TcgDeviceGeneric::revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) {
   return { DPARME_NOT_SUPPORTED, 0 };
 }
 

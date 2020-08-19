@@ -29,12 +29,12 @@ bool TcgDeviceOpalBase::isAnySSC() const {
   return true;
 }
 
-DparmReturn<uint8_t> TcgDeviceOpalBase::revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) {
+DparmReturn<OpalStatusCode> TcgDeviceOpalBase::revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) {
   TcgSessionImpl sess(this);
   TcgCommandImpl cmd;
   TcgResponseImpl resp;
 
-  DparmReturn<uint8_t> dres;
+  DparmReturn<OpalStatusCode> dres;
 
   OpalUID uid = OpalUID::SID_UID;
   if (is_psid) {
@@ -43,7 +43,7 @@ DparmReturn<uint8_t> TcgDeviceOpalBase::revertTPer(const std::string &password, 
   }
 
   dres = sess.start(OpalUID::ADMINSP_UID, password, uid);
-  if (!dres.isOk()) {
+  if (!dres.isOk() || dres.value != SUCCESS) {
     return dres;
   }
 
@@ -51,9 +51,11 @@ DparmReturn<uint8_t> TcgDeviceOpalBase::revertTPer(const std::string &password, 
   cmd.addToken(STARTLIST);
   cmd.addToken(ENDLIST);
   cmd.complete();
-  sess.dontAutoClose();
 
   dres = sess.sendCommand(cmd, resp);
+  if (dres.isOk()) {
+    sess.dontAutoClose();
+  }
 
   return dres;
 }

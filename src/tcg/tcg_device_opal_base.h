@@ -22,7 +22,7 @@ class TcgDeviceOpalBase : public TcgDeviceGeneric {
   TcgDeviceOpalBase(DriveHandleBase *drive_handle);
   bool isAnySSC() const override;
 
-  DparmReturn<uint8_t> revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) override;
+  DparmReturn<OpalStatusCode> revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) override;
 };
 
 } // namespace tcg

@@ -30,10 +30,10 @@ class TcgSessionImpl : public TcgSession {
 
   void setTimeout(uint32_t timeout_ms) override;
 
-  DparmReturn<uint8_t> start(const OpalUID &sp, const std::string &host_challenge, const std::vector<uint8_t> &sign_authority) override;
-  DparmReturn<uint8_t> start(const OpalUID &sp, const std::string &host_challenge, const OpalUID& sign_authority) override;
-  DparmReturn<uint8_t> authenticate(const std::vector<uint8_t> &sign_authority, const std::string &challenge) override;
-  DparmReturn<uint8_t> sendCommand(TcgCommand& cmd, TcgResponse& resp) override;
+  DparmReturn<OpalStatusCode> start(const OpalUID &sp, const std::string &host_challenge, const std::vector<uint8_t> &sign_authority) override;
+  DparmReturn<OpalStatusCode> start(const OpalUID &sp, const std::string &host_challenge, const OpalUID& sign_authority) override;
+  DparmReturn<OpalStatusCode> authenticate(const std::vector<uint8_t> &sign_authority, const std::string &challenge) override;
+  DparmReturn<OpalStatusCode> sendCommand(TcgCommand& cmd, TcgResponse& resp) override;
 
  private:
   std::unique_ptr<jcu::random::SecureRandom> random_;

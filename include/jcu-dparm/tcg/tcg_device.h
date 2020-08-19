@@ -13,6 +13,7 @@
 #include <string>
 
 #include <jcu-dparm/err.h>
+#include <jcu-dparm/tcg/tcg_types.h>
 
 namespace jcu {
 namespace dparm {
@@ -71,7 +72,7 @@ class TcgDevice {
    * @param is_admin_sp use admin sp uid
    * @return
    */
-  virtual DparmReturn<uint8_t> revertTPer(const std::string& password, uint8_t is_psid = 0, uint8_t is_admin_sp = 0) = 0;
+  virtual DparmReturn<OpalStatusCode> revertTPer(const std::string& password, uint8_t is_psid = 0, uint8_t is_admin_sp = 0) = 0;
 };
 
 } // namespace tcg
