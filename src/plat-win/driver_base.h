@@ -30,6 +30,7 @@ class WindowsDriverHandle : public DriveDriverHandle {
   virtual ~WindowsDriverHandle() {}
   virtual HANDLE getHandle() const = 0;
   virtual const std::string& getDevicePath() const = 0;
+  void mergeDriveInfo(DriveInfo &drive_info) const override;
 };
 
 class DriverBase {

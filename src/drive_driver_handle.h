@@ -37,6 +37,8 @@ class DriveDriverHandle {
   virtual ~DriveDriverHandle() {}
   virtual void close() = 0;
 
+  virtual void mergeDriveInfo(DriveInfo& drive_info) const = 0;
+
   DrivingType getDrivingType() const {
     return driving_type_;
   }

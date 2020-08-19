@@ -48,6 +48,9 @@ struct DriveInfo {
   std::string firmware_revision;
   char raw_serial[20];
 
+  int windows_dev_num;
+  std::string linux_dev_name; //TODO: Not implemented yet
+
   ata::ata_identify_device_data_t ata_identify;
   nvme::nvme_identify_controller_t nvme_identify_ctrl;
 
@@ -84,6 +87,7 @@ struct DriveInfo {
 
   DriveInfo() {
     driving_type = kDrivingUnknown;
+    windows_dev_num = -1;
     memset(&ata_identify, 0, sizeof(ata_identify));
     memset(&nvme_identify_ctrl, 0, sizeof(nvme_identify_ctrl));
     is_ssd = false;

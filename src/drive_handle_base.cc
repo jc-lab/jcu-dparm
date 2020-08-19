@@ -58,6 +58,8 @@ void DriveHandleBase::afterOpen() {
 int DriveHandleBase::parseIdentifyDevice() {
   auto driver_handle = getDriverHandle();
 
+  driver_handle->mergeDriveInfo(drive_info_);
+
   if (driver_handle->getDrivingType() == kDrivingAtapi) {
     ata::ata_identify_device_data_t data;
     auto raw = driver_handle->getAtaIdentifyDeviceBuf();

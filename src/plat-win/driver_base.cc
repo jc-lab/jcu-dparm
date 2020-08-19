@@ -13,6 +13,22 @@ namespace jcu {
 namespace dparm {
 namespace plat_win {
 
+void WindowsDriverHandle::mergeDriveInfo(DriveInfo &drive_info) const {
+  STORAGE_DEVICE_NUMBER stor_dev_num = {0};
+  DWORD bytes_returned = 0;
+  if (DeviceIoControl(
+          getHandle(),
+          IOCTL_STORAGE_GET_DEVICE_NUMBER,
+          NULL,
+          0,
+          &stor_dev_num,
+          sizeof(STORAGE_DEVICE_NUMBER),
+          &bytes_returned,
+          NULL)) {
+    drive_info.windows_dev_num = stor_dev_num.DeviceNumber;
+  }
+}
+
 } // namespace plat_win
 } // namespace dparm
 } // namespace jcu
