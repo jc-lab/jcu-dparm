@@ -17,7 +17,11 @@ namespace dparm {
 namespace tcg {
 
 class TcgDeviceOpal2 : public TcgDeviceOpalBase {
-
+ public:
+  TcgDeviceOpal2(DriveHandleBase *drive_handle);
+  TcgDeviceType getDeviceType() const override;
+  uint16_t getBaseComId() const override;
+  uint16_t getNumComIds() const override;
 };
 
 } // namespace tcg

@@ -10,14 +10,19 @@
 #ifndef JCU_DPARM_SRC_TCG_TCG_DEVICE_OPAL_BASE_H_
 #define JCU_DPARM_SRC_TCG_TCG_DEVICE_OPAL_BASE_H_
 
-#include "tcg_device.h"
+#include "tcg_device_general.h"
+#include <string>
 
 namespace jcu {
 namespace dparm {
 namespace tcg {
 
-class TcgDeviceOpalBase {
+class TcgDeviceOpalBase : public TcgDeviceGeneric {
+ public:
+  TcgDeviceOpalBase(DriveHandleBase *drive_handle);
+  bool isAnySSC() const override;
 
+  DparmReturn<uint8_t> revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) override;
 };
 
 } // namespace tcg

@@ -181,7 +181,7 @@ static DparmResult doTaskfileCmdImpl(
     }
   }
 
-  return { is_success ? DPARME_OK : DPARME_SYS, result };
+  return { is_success ? DPARME_OK : DPARME_SYS, is_success ? 0 : result };
 }
 
 DparmResult ScsiDriver::doSecurityCommandImpl(HANDLE handle, uint8_t protocol, uint16_t com_id, int rw, void *data, uint32_t data_bytes, int timeout_secs) {
@@ -275,7 +275,7 @@ DparmResult ScsiDriver::doSecurityCommandImpl(HANDLE handle, uint8_t protocol, u
     }
   }
 
-  return { is_success ? DPARME_OK : DPARME_SYS, result };
+  return { is_success ? DPARME_OK : DPARME_SYS, is_success ? 0 : result };
 }
 
 class ScsiDriverHandle : public WindowsDriverHandle {

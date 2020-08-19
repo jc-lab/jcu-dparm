@@ -14,6 +14,11 @@
 
 #include "intl_utils.h"
 
+#include "tcg/tcg_device_general.h"
+#include "tcg/tcg_device_opal_1.h"
+#include "tcg/tcg_device_opal_2.h"
+#include "tcg/tcg_device_enterprise.h"
+
 namespace jcu {
 namespace dparm {
 
@@ -78,6 +83,10 @@ int DriveHandleBase::parseIdentifyDevice() {
 
     drive_info_.model = intl::trimString(intl::fixAtaStringOrder(data.model_number, sizeof(data.model_number), true));
     drive_info_.firmware_revision = intl::trimString(intl::fixAtaStringOrder(data.firmware_revision, sizeof(data.firmware_revision), true));
+    for (int i = 0; i < sizeof(drive_info_.raw_serial); i++) {
+      drive_info_.raw_serial[i] = data.serial_number[i + 1];
+      drive_info_.raw_serial[i + 1] = data.serial_number[i];
+    }
     drive_info_.serial = intl::trimString(intl::fixAtaStringOrder(data.serial_number, sizeof(data.serial_number), true));
     if (data.sanitize_feature_supported) {
       if (data.security_status.security_enabled) {
@@ -105,6 +114,7 @@ int DriveHandleBase::parseIdentifyDevice() {
     memcpy(&data, raw.data(), sizeof(data));
     drive_info_.nvme_identify_ctrl = data;
 
+    memcpy(drive_info_.raw_serial, data.sn, sizeof(drive_info_.raw_serial));
     drive_info_.serial = intl::readStringRange((const unsigned char *) data.sn, 0, sizeof(data.sn), true);
     drive_info_.model = intl::readStringRange((const unsigned char *)data.mn, 0, sizeof(data.mn), true);
     drive_info_.firmware_revision = intl::readStringRange((const unsigned char *)data.fr, 0, sizeof(data.fr), true);
@@ -274,6 +284,23 @@ DparmResult DriveHandleBase::tcgDiscovery0() {
   }
 
   return dr;
+}
+
+tcg::TcgDevice *DriveHandleBase::getTcgDevice() {
+  if (!tcg_device_) {
+    if (drive_info_.tcg_support) {
+      if (drive_info_.tcg_opal_v200) {
+        tcg_device_.reset(new tcg::TcgDeviceOpal2(this));
+      } else if (drive_info_.tcg_opal_v100) {
+        tcg_device_.reset(new tcg::TcgDeviceOpal1(this));
+      } else if (drive_info_.tcg_enterprise) {
+        tcg_device_.reset(new tcg::TcgDeviceEnterprise(this));
+      } else {
+        tcg_device_.reset(new tcg::TcgDeviceGeneric(this));
+      }
+    }
+  }
+  return tcg_device_.get();
 }
 
 } // namespace dparm

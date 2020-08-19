@@ -125,7 +125,7 @@ static DparmResult doTaskfileCmdImpl(
     }
   }
 
-  return { is_success ? DPARME_OK : DPARME_SYS, result };
+  return { is_success ? DPARME_OK : DPARME_SYS, is_success ? 0 : result };
 }
 
 class AtaDrvierHandle : public WindowsDriverHandle {

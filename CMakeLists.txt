@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD 11)
 # Project Options
 option(jcu_dparm_BUILD_TESTS "Build tests" ON)
 
+include(libraries.cmake)
+
 # Main Library
 set(INC_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(INC_DIR ${INC_ROOT}/jcu-dparm)
@@ -22,6 +24,12 @@ set(INC_FILES
         ${INC_DIR}/ata_utils.h
         ${INC_DIR}/nvme_types.h
         ${INC_DIR}/nvme_utils.h
+        ${INC_DIR}/tcg/tcg_utils.h
+        ${INC_DIR}/tcg/tcg_device.h
+        ${INC_DIR}/tcg/tcg_command.h
+        ${INC_DIR}/tcg/tcg_response.h
+        ${INC_DIR}/tcg/tcg_session.h
+        ${INC_DIR}/tcg/tcg_token.h
         )
 
 set(SRC_FILES
@@ -33,12 +41,10 @@ set(SRC_FILES
         ${SRC_DIR}/drive_handle_sanitize.cc
         ${SRC_DIR}/intl_utils.h
         ${SRC_DIR}/intl_utils.cc
-        ${SRC_DIR}/tcg/tcg_device.h
-        ${SRC_DIR}/tcg/tcg_device.cc
-        ${SRC_DIR}/tcg/tcg_command.h
-        ${SRC_DIR}/tcg/tcg_command.cc
-        ${SRC_DIR}/tcg/tcg_session.h
-        ${SRC_DIR}/tcg/tcg_session.cc
+        ${SRC_DIR}/tcg/tcg_constants.cc
+        ${SRC_DIR}/tcg/tcg_utils.cc
+        ${SRC_DIR}/tcg/tcg_device_general.cc
+        ${SRC_DIR}/tcg/tcg_device_general.h
         ${SRC_DIR}/tcg/tcg_device_enterprise.h
         ${SRC_DIR}/tcg/tcg_device_enterprise.cc
         ${SRC_DIR}/tcg/tcg_device_opal_base.h
@@ -47,6 +53,21 @@ set(SRC_FILES
         ${SRC_DIR}/tcg/tcg_device_opal_1.cc
         ${SRC_DIR}/tcg/tcg_device_opal_2.h
         ${SRC_DIR}/tcg/tcg_device_opal_2.cc
+        ${SRC_DIR}/tcg/tcg_session_impl.cc
+        ${SRC_DIR}/tcg/tcg_session_impl.h
+        ${SRC_DIR}/tcg/tcg_command_impl.cc
+        ${SRC_DIR}/tcg/tcg_command_impl.h
+        ${SRC_DIR}/tcg/tcg_response_impl.cc
+        ${SRC_DIR}/tcg/tcg_response_impl.h
+        ${SRC_DIR}/tcg/tcg_intl.cc
+        ${SRC_DIR}/tcg/tcg_intl.h
+
+        ${SRC_DIR}/crypto/hash.cc
+        ${SRC_DIR}/crypto/hash.h
+        ${SRC_DIR}/crypto/hash_sha_1.cc
+        ${SRC_DIR}/crypto/hash_sha_1.h
+        ${SRC_DIR}/crypto/pbkdf2.cc
+        ${SRC_DIR}/crypto/pbkdf2.h
         )
 
 if(MSVC AND WIN32)
@@ -95,27 +116,31 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC
         ${INC_ROOT}
         )
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+        jcu-random
+        )
 
 # Test
-#
-#if (jcu_dparm_BUILD_TESTS)
-#    set(gtest_force_shared_crt ON CACHE BOOL "")
-#
-#    if (NOT TARGET gtest)
-#        FetchContent_Declare(
-#                googletest
-#                GIT_REPOSITORY https://github.com/google/googletest.git
-#                GIT_TAG release-1.10.0
-#        )
-#
-#        FetchContent_GetProperties(googletest)
-#
-#        if (NOT googletest_POPULATED)
-#            FetchContent_Populate(googletest)
-#            add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-#        endif ()
-#    endif ()
-#
-#    enable_testing()
-##    add_subdirectory(test)
-#endif ()
+if (jcu_dparm_BUILD_TESTS)
+    set(gtest_force_shared_crt ON CACHE BOOL "")
+
+    if (NOT TARGET gtest)
+        FetchContent_Declare(
+                googletest
+                GIT_REPOSITORY https://github.com/google/googletest.git
+                GIT_TAG release-1.10.0
+        )
+
+        FetchContent_GetProperties(googletest)
+
+        if (NOT googletest_POPULATED)
+            FetchContent_Populate(googletest)
+            add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+        endif ()
+    endif ()
+
+    enable_testing()
+    add_subdirectory(test)
+endif ()
+

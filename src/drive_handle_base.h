@@ -11,10 +11,12 @@
 #define JCU_DPARM_SRC_DRIVE_HANDLE_BASE_H_
 
 #include <string>
+#include <memory>
 
 #include <jcu-dparm/drive_handle.h>
 #include <jcu-dparm/ata_types.h>
 #include <jcu-dparm/tcg/tcg_types.h>
+#include <jcu-dparm/tcg/tcg_device.h>
 
 #include "drive_driver_handle.h"
 
@@ -28,11 +30,9 @@ class DriveHandleBase : public DriveHandle {
   std::string device_path_;
   DriveInfo drive_info_;
 
-  virtual DriveDriverHandle *getDriverHandle() const = 0;
+  std::unique_ptr<tcg::TcgDevice> tcg_device_;
 
-  const DriveInfo& getDriveInfo() const override {
-    return drive_info_;
-  }
+  virtual DriveDriverHandle *getDriverHandle() const = 0;
 
   const std::vector<unsigned char> getAtaIdentifyDeviceRaw() const {
     return getDriverHandle()->getAtaIdentifyDeviceBuf();
@@ -50,6 +50,10 @@ class DriveHandleBase : public DriveHandle {
   int parseIdentifyDevice();
 
  public:
+  const DriveInfo& getDriveInfo() const override {
+    return drive_info_;
+  }
+
   DparmResult doTaskfileCmd(
       int rw,
       int dma,
@@ -88,6 +92,8 @@ class DriveHandleBase : public DriveHandle {
   DparmResult doSecurityCommand(int rw, int dma, uint8_t protocol, uint16_t com_id, void *buffer, uint32_t len) override;
 
   DparmResult tcgDiscovery0();
+
+  tcg::TcgDevice* getTcgDevice() override;
 
 // public:
 //  DrivingType getDrivingType() override {

@@ -10,6 +10,8 @@
 #ifndef JCU_DPARM_TCG_TCG_TYPES_H_
 #define JCU_DPARM_TCG_TCG_TYPES_H_
 
+#include <stdint.h>
+
 namespace jcu {
 namespace dparm {
 namespace tcg {
@@ -32,6 +34,8 @@ enum FeatureCode {
 };
 
 extern "C" {
+
+#pragma pack(push, 1)
 
 /**
  * The Discovery 0 Header
@@ -101,8 +105,8 @@ typedef struct _discovery0_locking_feature {
   /* Big endian
   uint8_t reserved01 : 1;
   uint8_t reserved02 : 1;
-  uint8_t MBRDone : 1;
-  uint8_t MBREnabled : 1;
+  uint8_t mbr_done : 1;
+  uint8_t mbr_enabled : 1;
   uint8_t media_encryption : 1;
   uint8_t locked : 1;
   uint8_t locking_enabled : 1;
@@ -112,8 +116,8 @@ typedef struct _discovery0_locking_feature {
   uint8_t locking_enabled: 1;
   uint8_t locked: 1;
   uint8_t media_encryption: 1;
-  uint8_t MBREnabled: 1;
-  uint8_t MBRDone: 1;
+  uint8_t mbr_enabled: 1;
+  uint8_t mbr_done: 1;
   uint8_t reserved01: 1;
   uint8_t reserved02: 1;
 
@@ -170,8 +174,8 @@ typedef struct _discovery0_opal_ssc_feature_v200 {
   uint8_t reserved_v: 4;
   uint8_t version: 4;
   uint8_t length;
-  uint16_t base_comm_id;
-  uint16_t num_comm_ids;
+  uint16_t base_com_id;
+  uint16_t num_com_ids;
   /* big endian
   uint8_t reserved01 : 7;
   uint8_t range_crossing : 1;
@@ -179,8 +183,8 @@ typedef struct _discovery0_opal_ssc_feature_v200 {
   uint8_t range_crossing: 1;
   uint8_t reserved01: 7;
 
-  uint16_t numlocking_admin_auth;
-  uint16_t numlocking_user_auth;
+  uint16_t num_locking_admin_auth;
+  uint16_t num_locking_user_auth;
   uint8_t initial_pin;
   uint8_t reverted_pin;
   uint8_t reserved02;
@@ -267,7 +271,219 @@ union _discovery0_feature_u {
   struct _discovery0_datastore_table_feature datastore_table;
 };
 
+/*
+ * Reference: https://trustedcomputinggroup.org/wp-content/uploads/TCG_Storage_Opal_SSC_Application_Note_1-00_1-00-Final.pdf
+ */
+typedef struct _opal_com_packet {
+  uint32_t reserved0;
+  uint8_t  extended_com_id[4];
+  uint32_t outstanding_data;
+  uint32_t min_transfer;
+  uint32_t length;
+} opal_com_packet_t;
+
+typedef struct _opal_packet {
+  uint32_t tsn;
+  uint32_t hsn;
+  uint32_t seq_number;
+  uint16_t reserved00;
+  uint16_t ack_type;
+  uint32_t acknowledgement;
+  uint32_t length;
+} opal_packet_t;
+
+typedef struct _opal_data_sub_packet {
+  uint8_t reserved00[6];
+  uint16_t kind;
+  uint32_t length;
+} opal_data_sub_packet_t;
+
+typedef struct _opal_header {
+  opal_com_packet_t cp;
+  opal_packet_t pkt;
+  opal_data_sub_packet_t subpkt;
+} opal_header_t;
+
+#pragma pack(pop)
+
 } // extern "C"
+
+struct OpalUID {
+  unsigned char value[8];
+
+  /* users */
+  static const OpalUID SMUID_UID;
+  static const OpalUID THISSP_UID;
+  static const OpalUID ADMINSP_UID;
+  static const OpalUID LOCKINGSP_UID;
+  static const OpalUID ENTERPRISE_LOCKINGSP_UID;
+  static const OpalUID ANYBODY_UID;
+  static const OpalUID SID_UID;
+  static const OpalUID ADMIN1_UID;
+  static const OpalUID USER1_UID;
+  static const OpalUID USER2_UID;
+  static const OpalUID PSID_UID;
+  static const OpalUID ENTERPRISE_BANDMASTER0_UID;
+  static const OpalUID ENTERPRISE_ERASEMASTER_UID;
+  /* tables */
+  static const OpalUID LOCKINGRANGE_GLOBAL;
+  static const OpalUID LOCKINGRANGE_ACE_RDLOCKED;
+  static const OpalUID LOCKINGRANGE_ACE_WRLOCKED;
+  static const OpalUID MBRCONTROL;
+  static const OpalUID MBR;
+  static const OpalUID AUTHORITY_TABLE;
+  static const OpalUID C_PIN_TABLE;
+  static const OpalUID LOCKING_INFO_TABLE;
+  static const OpalUID ENTERPRISE_LOCKING_INFO_TABLE;
+  /* C_PIN_TABLE object ID's */
+  static const OpalUID C_PIN_MSID;
+  static const OpalUID C_PIN_SID;
+  static const OpalUID C_PIN_ADMIN1;
+  /* half UID's (only first 4 bytes used) */
+  static const OpalUID HALF_UID_AUTHORITY_OBJ_REF;
+  static const OpalUID HALF_UID_BOOLEAN_ACE;
+  /* special value for omitted optional parameter */
+  static const OpalUID UID_HEXFF;
+};
+
+struct OpalMethod {
+  unsigned char value[8];
+
+/**
+ * TCG Storage SSC Methods
+ * https://trustedcomputinggroup.org/wp-content/uploads/TCG_Storage-Opal_SSC_v2.01_rev1.00.pdf
+ */
+  static const OpalMethod OpalMethod::PROPERTIES;
+  static const OpalMethod OpalMethod::STARTSESSION;
+  static const OpalMethod OpalMethod::REVERT;
+  static const OpalMethod OpalMethod::ACTIVATE;
+  static const OpalMethod OpalMethod::EGET;
+  static const OpalMethod OpalMethod::ESET;
+  static const OpalMethod OpalMethod::NEXT;
+  static const OpalMethod OpalMethod::EAUTHENTICATE;
+  static const OpalMethod OpalMethod::GETACL;
+  static const OpalMethod OpalMethod::GENKEY;
+  static const OpalMethod OpalMethod::REVERTSP;
+  static const OpalMethod OpalMethod::GET;
+  static const OpalMethod OpalMethod::SET;
+  static const OpalMethod OpalMethod::AUTHENTICATE;
+  static const OpalMethod OpalMethod::RANDOM;
+  static const OpalMethod OpalMethod::ERASE;
+};
+
+/*
+ * Reference: https://trustedcomputinggroup.org/wp-content/uploads/TCG_Storage_Opal_SSC_Application_Note_1-00_1-00-Final.pdf
+ */
+enum OpalToken {
+  /* Boolean */
+  OPAL_TRUE = 0x01,
+  OPAL_FALSE = 0x00,
+  OPAL_BOOLEAN_EXPR = 0x03,
+
+  /* cellblocks */
+  TABLE = 0x00,
+  STARTROW = 0x01,
+  ENDROW = 0x02,
+  STARTCOLUMN = 0x03,
+  ENDCOLUMN = 0x04,
+  VALUES = 0x01,
+
+  /* authority table */
+  PIN = 0x03,
+
+  /* locking tokens */
+  RANGESTART = 0x03,
+  RANGELENGTH = 0x04,
+  READLOCKENABLED = 0x05,
+  WRITELOCKENABLED = 0x06,
+  READLOCKED = 0x07,
+  WRITELOCKED = 0x08,
+  ACTIVEKEY = 0x0A,
+
+  /* locking info table */
+  MAXRANGES = 0x04,
+
+  /* mbr control */
+  MBRENABLE = 0x01,
+  MBRDONE = 0x02,
+
+  /* properties */
+  HOSTPROPERTIES = 0x00,
+
+  /* response tokenis() returned values */
+  DTA_TOKENID_BYTESTRING = 0xe0,
+  DTA_TOKENID_SINT = 0xe1,
+  DTA_TOKENID_UINT = 0xe2,
+  DTA_TOKENID_TOKEN = 0xe3, // actual token is returned
+
+  STARTLIST = 0xf0,
+  ENDLIST = 0xf1,
+  STARTNAME = 0xf2,
+  ENDNAME = 0xf3,
+  CALL = 0xf8,
+  ENDOFDATA = 0xf9,
+  ENDOFSESSION = 0xfa,
+  STARTTRANSACTON = 0xfb,
+  ENDTRANSACTON = 0xfc,
+  EMPTYATOM = 0xff,
+  WHERE = 0x00,
+};
+
+enum OpalTinyAtom {
+  UINT_00 = 0x00,
+  UINT_01 = 0x01,
+  UINT_02 = 0x02,
+  UINT_03 = 0x03,
+  UINT_04 = 0x04,
+  UINT_05 = 0x05,
+  UINT_06 = 0x06,
+  UINT_07 = 0x07,
+  UINT_08 = 0x08,
+  UINT_09 = 0x09,
+  UINT_10 = 0x0a,
+  UINT_11 = 0x0b,
+  UINT_12 = 0x0c,
+  UINT_13 = 0x0d,
+  UINT_14 = 0x0e,
+  UINT_15 = 0x0f,
+};
+
+enum OpalShortAtom {
+  UINT_3 = 0x83,
+  BYTESTRING4 = 0xa4,
+  BYTESTRING8 = 0xa8,
+};
+
+enum OpalLockingState {
+  READWRITE = 0x01,
+  READONLY = 0x02,
+  LOCKED = 0x03,
+  ARCHIVELOCKED = 0x04,
+  ARCHIVEUNLOCKED = 0x05,
+};
+
+enum OpalStatusCode {
+  SUCCESS = 0x00,
+  NOT_AUTHORIZED = 0x01,
+  //	OBSOLETE = 0x02,
+  SP_BUSY = 0x03,
+  SP_FAILED = 0x04,
+  SP_DISABLED = 0x05,
+  SP_FROZEN = 0x06,
+  NO_SESSIONS_AVAILABLE = 0x07,
+  UNIQUENESS_CONFLICT = 0x08,
+  INSUFFICIENT_SPACE = 0x09,
+  INSUFFICIENT_ROWS = 0x0A,
+  INVALID_FUNCTION = 0x0B, // defined in early specs, still used in some firmware
+  INVALID_PARAMETER = 0x0C,
+  INVALID_REFERENCE = 0x0D,
+  //	OBSOLETE = 0x0E,
+  TPER_MALFUNCTION = 0x0F,
+  TRANSACTION_FAILURE = 0x10,
+  RESPONSE_OVERFLOW = 0x11,
+  AUTHORITY_LOCKED_OUT = 0x12,
+  FAIL = 0x3f,
+};
 
 } // namespace tcg
 } // namespace dparm

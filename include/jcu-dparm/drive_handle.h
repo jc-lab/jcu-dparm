@@ -14,10 +14,14 @@
 
 #include "./types.h"
 #include "./err.h"
+#include "tcg/tcg_device.h"
 
 namespace jcu {
 namespace dparm {
 
+/**
+ * @warning: Methods non thread safe
+ */
 class DriveHandle {
  public:
   virtual bool isOpen() const = 0;
@@ -55,6 +59,14 @@ class DriveHandle {
   /* High-level methods */
   virtual DparmReturn<SanitizeCmdResult> doSanitizeCmd(const SanitizeOptions& options) = 0;
   virtual DparmReturn<SanitizeEstimates> getSanitizeEstimates() = 0;
+
+  /**
+   * get tcg device class pointer
+   * @return TcgDevice Class
+   * @warning DO NOT FREE/DELETE RETURNED OBJECT!
+   *          IT IS MANAGED BY DriveHandleBase
+   */
+  virtual tcg::TcgDevice* getTcgDevice() = 0;
 };
 
 } // namespace dparm

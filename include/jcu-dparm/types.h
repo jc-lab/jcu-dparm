@@ -46,6 +46,7 @@ struct DriveInfo {
   std::string model;
   std::string serial;
   std::string firmware_revision;
+  char raw_serial[20];
 
   ata::ata_identify_device_data_t ata_identify;
   nvme::nvme_identify_controller_t nvme_identify_ctrl;
