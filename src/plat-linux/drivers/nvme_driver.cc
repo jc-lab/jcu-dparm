@@ -42,14 +42,13 @@ class NvmeDriverHandle : public LinuxDriverHandle {
 
   DparmReturn<int> readIdentify() {
     std::vector<unsigned char> identify_buf(4096);
-    nvme::nvme_admin_cmd_t identify_cmd = {
-        .opcode = nvme::NVME_ADMIN_OP_IDENTIFY,
-        .nsid = 0,
-        .addr = (uint64_t)identify_buf.data(),
-        .data_len = 4096,
-        .cdw10 = 1,
-        .cdw11 = 0
-    };
+    nvme::nvme_admin_cmd_t identify_cmd = { 0 };
+    identify_cmd.opcode = nvme::NVME_ADMIN_OP_IDENTIFY;
+    identify_cmd.nsid = 0;
+    identify_cmd.addr = (uint64_t)identify_buf.data();
+    identify_cmd.data_len = 4096;
+    identify_cmd.cdw10 = 1;
+    identify_cmd.cdw11 = 0;
     DparmReturn<int> result = doNvmeAdminPassthru(&identify_cmd);
     if (result.isOk()) {
       nvme_identify_device_buf_.swap(identify_buf);
