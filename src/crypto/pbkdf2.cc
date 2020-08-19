@@ -7,6 +7,8 @@
  *            of the Apache License 2.0.  See the LICENSE file for details.
  */
 
+#include <string.h>
+
 #include "pbkdf2.h"
 #include "hash.h"
 
@@ -44,7 +46,7 @@ std::vector<uint8_t> pbkdf2(
   std::vector<unsigned char> U_i(spec.salt.size() + 4);
 
   for (int i = 1; i <= l; i++) {
-    memset(U_r.data(), 0, U_r.size());
+    ::memset(U_r.data(), 0, U_r.size());
     F(tbuf.data(), ti_offset, &prf, &spec, i, &U_r[0], &U_i[0]);
     ti_offset += hash_len;
   }

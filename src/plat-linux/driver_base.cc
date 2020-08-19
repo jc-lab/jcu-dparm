@@ -11,7 +11,10 @@
 
 namespace jcu {
 namespace dparm {
-namespace plat_win {
+namespace plat_linux {
+
+void LinuxDriverHandle::mergeDriveInfo(DriveInfo &drive_info) const {
+}
 
 } // namespace plat_win
 } // namespace dparm

@@ -7,9 +7,10 @@
  *            of the Apache License 2.0.  See the LICENSE file for details.
  */
 
-#include "hash_sha_1.h"
-
+#include <memory>
 #include <string.h>
+
+#include "hash_sha_1.h"
 
 namespace jcu {
 namespace dparm {
@@ -24,7 +25,7 @@ int HashSha1Factory::getBlockSize() const {
 }
 
 std::unique_ptr<Hash> HashSha1Factory::createHash() const {
-  return std::make_unique<HashSha1>();
+  return std::unique_ptr<Hash>(new HashSha1());
 }
 
 HashSha1::HashSha1() {

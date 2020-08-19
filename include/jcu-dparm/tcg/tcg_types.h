@@ -353,22 +353,22 @@ struct OpalMethod {
  * TCG Storage SSC Methods
  * https://trustedcomputinggroup.org/wp-content/uploads/TCG_Storage-Opal_SSC_v2.01_rev1.00.pdf
  */
-  static const OpalMethod OpalMethod::PROPERTIES;
-  static const OpalMethod OpalMethod::STARTSESSION;
-  static const OpalMethod OpalMethod::REVERT;
-  static const OpalMethod OpalMethod::ACTIVATE;
-  static const OpalMethod OpalMethod::EGET;
-  static const OpalMethod OpalMethod::ESET;
-  static const OpalMethod OpalMethod::NEXT;
-  static const OpalMethod OpalMethod::EAUTHENTICATE;
-  static const OpalMethod OpalMethod::GETACL;
-  static const OpalMethod OpalMethod::GENKEY;
-  static const OpalMethod OpalMethod::REVERTSP;
-  static const OpalMethod OpalMethod::GET;
-  static const OpalMethod OpalMethod::SET;
-  static const OpalMethod OpalMethod::AUTHENTICATE;
-  static const OpalMethod OpalMethod::RANDOM;
-  static const OpalMethod OpalMethod::ERASE;
+  static const OpalMethod PROPERTIES;
+  static const OpalMethod STARTSESSION;
+  static const OpalMethod REVERT;
+  static const OpalMethod ACTIVATE;
+  static const OpalMethod EGET;
+  static const OpalMethod ESET;
+  static const OpalMethod NEXT;
+  static const OpalMethod EAUTHENTICATE;
+  static const OpalMethod GETACL;
+  static const OpalMethod GENKEY;
+  static const OpalMethod REVERTSP;
+  static const OpalMethod GET;
+  static const OpalMethod SET;
+  static const OpalMethod AUTHENTICATE;
+  static const OpalMethod RANDOM;
+  static const OpalMethod ERASE;
 };
 
 /*

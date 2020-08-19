@@ -25,6 +25,8 @@ class LinuxDriverHandle : public DriveDriverHandle {
  public:
   virtual ~LinuxDriverHandle() {}
   virtual int getFD() const = 0;
+
+  void mergeDriveInfo(DriveInfo &drive_info) const override;
 };
 
 class DriverBase {

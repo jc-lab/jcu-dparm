@@ -8,6 +8,7 @@
  */
 
 #include <vector>
+#include <string.h>
 
 #include "tcg_response_impl.h"
 
@@ -24,7 +25,7 @@ TcgResponseImpl::TcgResponseImpl() {
 }
 
 void TcgResponseImpl::reset() {
-  memset(resp_ptr_, 0, MIN_BUFFER_LENGTH);
+  ::memset(resp_ptr_, 0, MIN_BUFFER_LENGTH);
 }
 
 uint8_t* TcgResponseImpl::getRespBuf() {

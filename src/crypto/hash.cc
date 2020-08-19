@@ -7,6 +7,8 @@
  *            of the Apache License 2.0.  See the LICENSE file for details.
  */
 
+#include <string.h>
+
 #include "hash.h"
 
 namespace jcu {
