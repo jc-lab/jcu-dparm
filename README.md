@@ -49,3 +49,12 @@ int main() {
   return 0;
 }
 ```
+
+
+# Notes
+
+* 유용한 정보들 : https://jsty.tistory.com/237?category=881462
+
+* TCG 관련 요약 : https://jsty.tistory.com/239
+
+* TCG Locking 확인 : https://jsty.tistory.com/238
