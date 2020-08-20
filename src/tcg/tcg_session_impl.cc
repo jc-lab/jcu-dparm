@@ -250,7 +250,12 @@ DparmReturn<OpalStatusCode> TcgSessionImpl::sendCommand(TcgCommand& cmd, TcgResp
   if (!method_status.isOk()) {
     return { method_status.code, method_status.sys_error, method_status.drive_status, (OpalStatusCode)0 };
   }
-  return { DPARME_OK, dres.sys_error, dres.drive_status, (OpalStatusCode)method_status.value };
+
+  if (method_status.value != SUCCESS) {
+    return { DPARME_TCG_ERROR_STATUS, dres.sys_error, dres.drive_status, (OpalStatusCode)method_status.value };
+  }
+
+  return { dres, (OpalStatusCode)SUCCESS };
 }
 
 
