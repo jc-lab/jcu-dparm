@@ -262,7 +262,7 @@ DparmResult DriveHandleBase::tcgDiscovery0() {
         drive_info_.tcg_locking = true;
         break;
       case tcg::kFcGeometryReporting:
-        drive_info_.tcg_geomerty_reporting = true;
+        drive_info_.tcg_geometry_reporting = true;
         break;
       case tcg::kFcOpalSscV100:
         drive_info_.tcg_opal_v100 = true;

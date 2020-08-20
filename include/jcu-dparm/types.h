@@ -75,7 +75,7 @@ struct DriveInfo {
   int tcg_support;
 
   bool tcg_tper;
-  bool tcg_geomerty_reporting;
+  bool tcg_geometry_reporting;
   bool tcg_locking;
   bool tcg_opal_v100;
   bool tcg_opal_v200;
@@ -97,7 +97,7 @@ struct DriveInfo {
     support_sanitize_overwrite = false;
     tcg_support = false;
     tcg_tper = false;
-    tcg_geomerty_reporting = false;
+    tcg_geometry_reporting = false;
     tcg_locking = false;
     tcg_opal_v100 = false;
     tcg_opal_v200 = false;
