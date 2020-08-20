@@ -239,7 +239,7 @@ DparmResult DriveHandleBase::tcgDiscovery0() {
   drive_info_.tcg_support = 1;
 
   if (discovery_aend < discovery_dend) {
-    return { DPARME_ILLEGAL_DATA, 0 };
+    return { DPARME_ILLEGAL_RESPONSE, 0 };
   }
 
   discovery_cptr += sizeof(*discovery_header);

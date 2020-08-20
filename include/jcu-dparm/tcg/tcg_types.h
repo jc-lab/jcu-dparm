@@ -380,7 +380,9 @@ enum OpalToken {
   OPAL_FALSE = 0x00,
   OPAL_BOOLEAN_EXPR = 0x03,
 
-  /* cellblocks */
+  /**
+   * Opal: Cell Blocks
+   */
   TABLE = 0x00,
   STARTROW = 0x01,
   ENDROW = 0x02,
@@ -388,20 +390,52 @@ enum OpalToken {
   ENDCOLUMN = 0x04,
   VALUES = 0x01,
 
-  /* authority table */
-  PIN = 0x03,
+  /*
+   * Opal: Credential Table Group
+   *
+   * Reference: https://trustedcomputinggroup.org/wp-content/uploads/TCG_Storage_Architecture_Core_Spec_v2.01_r1.00.pdf
+   * Table 181. C_PIN Table Description
+   * */
+  CREDENTIAL_UID = 0x00,
+  CREDENTIAL_NAME = 0x01,
+  CREDENTIAL_COMMON_NAME = 0x02,
+  CREDENTIAL_PIN = 0x03,
+  CREDENTIAL_CHAR_SET = 0x04,
+  CREDENTIAL_TRY_LIMIT = 0x05,
+  CREDENTIAL_TRIES = 0x06,
+  CREDENTIAL_PERSISTENCE = 0x07,
 
-  /* locking tokens */
-  RANGESTART = 0x03,
-  RANGELENGTH = 0x04,
-  READLOCKENABLED = 0x05,
-  WRITELOCKENABLED = 0x06,
-  READLOCKED = 0x07,
-  WRITELOCKED = 0x08,
-  ACTIVEKEY = 0x0A,
+  /*
+   * Opal: Locking Table
+   *
+   * Reference: https://trustedcomputinggroup.org/wp-content/uploads/TCG_Storage_Architecture_Core_Spec_v2.01_r1.00.pdf
+   * Table 226. Locking Table Description
+   * */
+  LOCKING_UID = 0x00,
+  LOCKING_NAME = 0x01,
+  LOCKING_COMMON_NAME = 0x02,
+  LOCKING_RANGE_START = 0x03,
+  LOCKING_RANGE_LENGTH = 0x04,
+  LOCKING_READ_LOCK_ENABLED = 0x05,
+  LOCKING_WRITE_LOCK_ENABLED = 0x06,
+  LOCKING_READ_LOCKED = 0x07,
+  LOCKING_WRITE_LOCKED = 0x08,
+  LOCKING_LOCK_ON_RESET = 0x09,
+  LOCKING_ACTIVE_KEY = 0x0A,
+  LOCKING_NEXT_KEY = 0x0B,
+  LOCKING_GENERAL_STATUS = 0x13,
 
-  /* locking info table */
-  MAXRANGES = 0x04,
+  /*
+   * Opal: LockingInfo Table
+   *
+   * Reference: https://trustedcomputinggroup.org/wp-content/uploads/TCG_Storage_Architecture_Core_Spec_v2.01_r1.00.pdf
+   * Table 225. LockingInfo Table Description
+   * */
+  LOCKINGINFO_UID = 0x00,
+  LOCKINGINFO_NAME = 0x01,
+  LOCKINGINFO_COMMON_NAME = 0x02,
+  LOCKINGINFO_ENCRYPT_SUPPORT = 0x03,
+  LOCKINGINFO_MAXRANGES = 0x04,
 
   /* mbr control */
   MBRENABLE = 0x01,

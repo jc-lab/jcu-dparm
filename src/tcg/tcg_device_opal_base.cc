@@ -60,6 +60,67 @@ DparmReturn<OpalStatusCode> TcgDeviceOpalBase::revertTPer(const std::string &pas
   return dres;
 }
 
+DparmReturn<OpalStatusCode> TcgDeviceOpalBase::opalGetTable(TcgSession& session, TcgResponse& response, const std::vector<uint8_t> &table, uint16_t start_col, uint16_t end_col) {
+  TcgCommandImpl cmd;
+  cmd.reset(table, OpalMethod::GET);
+  cmd.addToken(STARTLIST);
+  {
+    cmd.addToken(STARTLIST);
+    {
+      cmd.addToken(STARTNAME);
+      cmd.addToken(STARTCOLUMN);
+      cmd.addNumberToken(start_col);
+      cmd.addToken(ENDNAME);
+    }
+    {
+      cmd.addToken(STARTNAME);
+      cmd.addToken(ENDCOLUMN);
+      cmd.addNumberToken(end_col);
+      cmd.addToken(ENDNAME);
+    }
+    cmd.addToken(ENDLIST);
+  }
+  cmd.addToken(ENDLIST);
+  cmd.complete();
+
+  return session.sendCommand(cmd, response);
+}
+
+DparmReturn<OpalStatusCode> TcgDeviceOpalBase::getDefaultPassword(std::string *out_password) {
+  auto session = createSession();
+  auto response = createResponse();
+  auto dres = session->start(OpalUID::ADMINSP_UID, "", OpalUID::UID_HEXFF);
+  if (!dres.isOk()) {
+    return dres;
+  }
+  std::vector<uint8_t> table;
+
+  table.reserve(9);
+
+  table.push_back(BYTESTRING8);
+  auto msid = OpalUID::C_PIN_MSID;
+  table.insert(table.end(), msid.value, msid.value + sizeof(msid.value));
+
+  dres = opalGetTable(*session, *response, table, CREDENTIAL_PIN, CREDENTIAL_PIN);
+  if (!dres.isOk()) {
+    return dres;
+  }
+
+  auto password_token = response->getToken(4);
+  if (!password_token) {
+    return { DPARME_ILLEGAL_RESPONSE, 0 };
+  }
+
+  auto password_string = password_token->getString();
+  if (!password_string.isOk()) {
+    return { password_string, (OpalStatusCode)0 };
+  }
+
+  *out_password = password_string.value;
+
+  return { DPARME_OK, 0, 0, (OpalStatusCode)0 };
+}
+
 } // namespace tcg
 } // namespace dparm
 } // namespace jcu

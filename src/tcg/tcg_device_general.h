@@ -36,6 +36,9 @@ class TcgDeviceGeneric : public TcgDevice {
   bool isMediaEncryption() const override;
   uint16_t getBaseComId() const override;
   uint16_t getNumComIds() const override;
+  std::unique_ptr<TcgSession> createSession() override;
+  std::unique_ptr<TcgCommand> createCommand() override;
+  std::unique_ptr<TcgResponse> createResponse() override;
   DparmResult exec(const TcgCommand &cmd, TcgResponse &resp, uint8_t protocol) override;
   DparmReturn<OpalStatusCode> revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) override;
 };

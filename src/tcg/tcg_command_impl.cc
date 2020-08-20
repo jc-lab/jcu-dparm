@@ -34,6 +34,13 @@ void TcgCommandImpl::reset() {
   cmd_pos_ = sizeof(*header_);
 }
 
+void TcgCommandImpl::reset(const std::vector<uint8_t> &invoking_uid, const OpalMethod &method) {
+  reset();
+  cmd_ptr_[cmd_pos_++] = CALL;
+  addRawToken(invoking_uid.data(), invoking_uid.size());
+  addToken(method);
+}
+
 void TcgCommandImpl::reset(const OpalUID &invoking_uid, const OpalMethod &method) {
   reset();
   cmd_ptr_[cmd_pos_++] = CALL;
@@ -83,6 +90,10 @@ bool TcgCommandImpl::addToken(const OpalMethod& method) {
 }
 
 bool TcgCommandImpl::addStringToken(const char *text, int length) {
+  if (length < 0) {
+    length = strlen(text);
+  }
+
   if (length == 0) {
     if (checkCmdBufWrite(2)) {
       // null token

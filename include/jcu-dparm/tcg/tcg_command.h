@@ -10,6 +10,8 @@
 #ifndef JCU_DPARM_TCG_TCG_COMMAND_H_
 #define JCU_DPARM_TCG_TCG_COMMAND_H_
 
+#include <vector>
+
 #include "tcg_types.h"
 
 namespace jcu {
@@ -19,7 +21,8 @@ namespace tcg {
 class TcgCommand {
  public:
   virtual void reset() = 0;
-  virtual void reset(const OpalUID& uid, const OpalMethod& method) = 0;
+  virtual void reset(const std::vector<uint8_t>& invoking_uid, const OpalMethod& method) = 0;
+  virtual void reset(const OpalUID& invoking_uid, const OpalMethod& method) = 0;
 
   virtual bool addRawToken(const uint8_t* data, int length) = 0;
   virtual bool addToken(OpalToken token) = 0;
@@ -28,7 +31,7 @@ class TcgCommand {
   virtual bool addToken(OpalLockingState token) = 0;
   virtual bool addToken(const OpalUID& uid) = 0;
   virtual bool addToken(const OpalMethod& method) = 0;
-  virtual bool addStringToken(const char* text, int length) = 0;
+  virtual bool addStringToken(const char* text, int length = -1) = 0;
   virtual bool addNumberToken(uint64_t value) = 0;
   virtual bool complete(bool eod = true) = 0;
 

@@ -10,8 +10,10 @@
 #ifndef JCU_DPARM_SRC_TCG_TCG_DEVICE_OPAL_BASE_H_
 #define JCU_DPARM_SRC_TCG_TCG_DEVICE_OPAL_BASE_H_
 
-#include "tcg_device_general.h"
 #include <string>
+#include <vector>
+
+#include "tcg_device_general.h"
 
 namespace jcu {
 namespace dparm {
@@ -22,6 +24,18 @@ class TcgDeviceOpalBase : public TcgDeviceGeneric {
   TcgDeviceOpalBase(DriveHandleBase *drive_handle);
   bool isAnySSC() const override;
 
+  /**
+   * get table
+   *
+   * @param response
+   * @param table
+   * @param start_col OpalToken
+   * @param end_col   OpalToken
+   * @return result
+   */
+  DparmReturn<OpalStatusCode> opalGetTable(TcgSession& session, TcgResponse& response, const std::vector<uint8_t>& table, uint16_t start_col, uint16_t end_col) override;
+
+  DparmReturn<OpalStatusCode> getDefaultPassword(std::string* out_password) override;
   DparmReturn<OpalStatusCode> revertTPer(const std::string &password, uint8_t is_psid, uint8_t is_admin_sp) override;
 };
 

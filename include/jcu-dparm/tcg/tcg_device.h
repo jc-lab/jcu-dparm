@@ -11,6 +11,7 @@
 #define JCU_DPARM_TCG_TCG_DEVICE_H_
 
 #include <string>
+#include <memory>
 
 #include <jcu-dparm/err.h>
 #include <jcu-dparm/tcg/tcg_types.h>
@@ -32,6 +33,7 @@ enum TcgDeviceType {
 
 class TcgCommand;
 class TcgResponse;
+class TcgSession;
 
 class TcgDevice {
  public:
@@ -55,6 +57,10 @@ class TcgDevice {
   virtual uint16_t getBaseComId() const = 0;
   virtual uint16_t getNumComIds() const = 0;
 
+  virtual std::unique_ptr<TcgSession> createSession() = 0;
+  virtual std::unique_ptr<TcgCommand> createCommand() = 0;
+  virtual std::unique_ptr<TcgResponse> createResponse() = 0;
+
   /**
    * execute low-level TCG Command
    * @param cmd      command
@@ -62,7 +68,44 @@ class TcgDevice {
    * @param protocol protocol
    * @return result
    */
-  virtual DparmResult exec(const TcgCommand &cmd, TcgResponse& resp, uint8_t protocol = 0x01) = 0;
+  virtual DparmResult exec(const TcgCommand& cmd, TcgResponse& resp, uint8_t protocol = 0x01) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  /**
+   * get table
+   *
+   * @param response
+   * @param table
+   * @param start_col refer enum OpalToken
+   * @param end_col   refer enum OpalToken
+   * @return result
+   */
+  virtual DparmReturn<OpalStatusCode> opalGetTable(TcgSession& session, TcgResponse& response, const std::vector<uint8_t>& table, uint16_t start_col, uint16_t end_col) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  /**
+   * get table
+   *
+   * @param response
+   * @param table
+   * @param start_col column name
+   * @param end_col   column name
+   * @return result
+   */
+  virtual DparmReturn<OpalStatusCode> enterpriseGetTable(TcgSession& session, TcgResponse& response, const std::vector<uint8_t>& table, const char* start_col, const char* end_col) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  /**
+   * get default password (MSID)
+   *
+   * @return MSID
+   */
+  virtual DparmReturn<OpalStatusCode> getDefaultPassword(std::string* out_password) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
 
   /**
    * revertTPer
@@ -72,7 +115,9 @@ class TcgDevice {
    * @param is_admin_sp use admin sp uid
    * @return
    */
-  virtual DparmReturn<OpalStatusCode> revertTPer(const std::string& password, uint8_t is_psid = 0, uint8_t is_admin_sp = 0) = 0;
+  virtual DparmReturn<OpalStatusCode> revertTPer(const std::string& password, uint8_t is_psid = 0, uint8_t is_admin_sp = 0) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
 };
 
 } // namespace tcg

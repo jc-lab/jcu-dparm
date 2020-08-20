@@ -139,7 +139,7 @@ DparmReturn<OpalStatusCode> TcgSessionImpl::start(const OpalUID &sp, const std::
   auto hsn_token = resp.getToken(4);
   auto tsn_token = resp.getToken(5);
   if (!hsn_token || !tsn_token) {
-    return { DPARME_ILLEGAL_DATA, 0, 0, (OpalStatusCode)0 };
+    return { DPARME_ILLEGAL_RESPONSE, 0, 0, (OpalStatusCode)0 };
   }
 
   temp_u32 = hsn_token->getUint32();
@@ -200,7 +200,7 @@ DparmReturn<OpalStatusCode> TcgSessionImpl::authenticate(const std::vector<uint8
 
   auto temp_token = resp.getToken(1);
   if (!temp_token) {
-    return { DPARME_ILLEGAL_DATA, 0, 0, (OpalStatusCode)0 };
+    return { DPARME_ILLEGAL_RESPONSE, 0, 0, (OpalStatusCode)0 };
   }
   DparmReturn<uint8_t> temp_u8 = temp_token->getUint8();
   if (!temp_u8.isOk()) {
@@ -225,12 +225,12 @@ DparmReturn<OpalStatusCode> TcgSessionImpl::sendCommand(TcgCommand& cmd, TcgResp
   opal_header_t *resp_header = (opal_header_t*)resp.getRespBuf();
   if ((!resp_header->cp.length) || (!resp_header->pkt.length) || (!resp_header->subpkt.length)) {
     // payload is not received
-    return { DPARME_ILLEGAL_DATA, 0, 0, (OpalStatusCode)0 };
+    return { DPARME_ILLEGAL_RESPONSE, 0, 0, (OpalStatusCode)0 };
   }
 
   const TcgTokenVO* temp_token = resp.getToken(0);
   if (!temp_token) {
-    return { DPARME_ILLEGAL_DATA, 0, 0, (OpalStatusCode)0 };
+    return { DPARME_ILLEGAL_RESPONSE, 0, 0, (OpalStatusCode)0 };
   }
   if (temp_token->type() == ENDOFSESSION) {
     return { DPARME_OK, 0, 0, (OpalStatusCode)0 };
@@ -239,12 +239,12 @@ DparmReturn<OpalStatusCode> TcgSessionImpl::sendCommand(TcgCommand& cmd, TcgResp
   auto token_a = resp.getToken(resp.getTokenCount() - 1);
   auto token_b = resp.getToken(resp.getTokenCount() - 5);
   if (!token_a || !token_b) {
-    return { DPARME_ILLEGAL_DATA, 0, 0, (OpalStatusCode)0 };
+    return { DPARME_ILLEGAL_RESPONSE, 0, 0, (OpalStatusCode)0 };
   }
 
   if ((token_a->type() != ENDLIST) && token_b->type() == STARTLIST) {
     // No method status
-    return { DPARME_ILLEGAL_DATA, 0, 0, (OpalStatusCode)0 };
+    return { DPARME_ILLEGAL_RESPONSE, 0, 0, (OpalStatusCode)0 };
   }
 
   temp_token = resp.getToken(resp.getTokenCount() - 4);

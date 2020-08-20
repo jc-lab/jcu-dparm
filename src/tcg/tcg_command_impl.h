@@ -27,6 +27,7 @@ class TcgCommandImpl : public TcgCommand {
 
   TcgCommandImpl();
   void reset() override;
+  void reset(const std::vector<uint8_t>& invoking_uid, const OpalMethod& method) override;
   void reset(const OpalUID &invoking_uid, const OpalMethod &method) override;
   bool addRawToken(const uint8_t* data, int length) override;
   bool addToken(OpalToken token) override;
@@ -35,7 +36,7 @@ class TcgCommandImpl : public TcgCommand {
   bool addToken(OpalLockingState token) override;
   bool addToken(const OpalUID& uid) override;
   bool addToken(const OpalMethod& method) override;
-  bool addStringToken(const char *text, int length) override;
+  bool addStringToken(const char *text, int length = -1) override;
   bool addNumberToken(uint64_t value) override;
   bool complete(bool eod = true) override;
 

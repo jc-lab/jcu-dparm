@@ -12,6 +12,10 @@
 #include "tcg_device_general.h"
 #include "../drive_handle_base.h"
 
+#include "tcg_session_impl.h"
+#include "tcg_command_impl.h"
+#include "tcg_response_impl.h"
+
 namespace jcu {
 namespace dparm {
 namespace tcg {
@@ -88,6 +92,18 @@ uint16_t TcgDeviceGeneric::getBaseComId() const {
 
 uint16_t TcgDeviceGeneric::getNumComIds() const {
   return 0;
+}
+
+std::unique_ptr<TcgSession> TcgDeviceGeneric::createSession() {
+  return std::unique_ptr<TcgSession>(new TcgSessionImpl(this));
+}
+
+std::unique_ptr<TcgCommand> TcgDeviceGeneric::createCommand() {
+  return std::unique_ptr<TcgCommand>(new TcgCommandImpl());
+}
+
+std::unique_ptr<TcgResponse> TcgDeviceGeneric::createResponse() {
+  return std::unique_ptr<TcgResponse>(new TcgResponseImpl());
 }
 
 DparmResult TcgDeviceGeneric::exec(const TcgCommand &cmd, TcgResponse &resp, uint8_t protocol) {
