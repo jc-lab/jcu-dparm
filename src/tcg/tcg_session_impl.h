@@ -39,7 +39,7 @@ class TcgSessionImpl : public TcgSession {
   std::unique_ptr<jcu::random::SecureRandom> random_;
 
   TcgDevice* tcg_device_;
-  bool active_;
+  bool session_opened_;
 
   uint64_t host_session_num_;
   uint64_t tper_session_num_;

@@ -27,7 +27,7 @@ namespace tcg {
 
 TcgSessionImpl::TcgSessionImpl(TcgDevice* tcg_device)
     : tcg_device_(tcg_device),
-      active_(false),
+      session_opened_(false),
       host_session_num_(0),
       tper_session_num_(0),
       flag_auto_close_(true),
@@ -42,8 +42,8 @@ TcgSessionImpl::~TcgSessionImpl() {
 }
 
 void TcgSessionImpl::close() {
-  if (flag_auto_close_ && active_) {
-    active_ = false;
+  if (flag_auto_close_ && session_opened_) {
+    session_opened_ = false;
 
     TcgCommandImpl cmd;
     TcgResponseImpl resp;
@@ -131,6 +131,8 @@ DparmReturn<OpalStatusCode> TcgSessionImpl::start(const OpalUID &sp, const std::
   if (!dres.isOk() || dres.value != 0) {
     return dres;
   }
+
+  session_opened_ = true;
 
   DparmReturn<uint32_t> temp_u32;
 
