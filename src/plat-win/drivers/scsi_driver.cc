@@ -312,6 +312,10 @@ class ScsiDriverHandle : public WindowsDriverHandle {
     return device_path_;
   }
 
+  bool driverIsTaskfileCmdSupported() const override {
+    return true;
+  }
+
   DparmResult doTaskfileCmd(
       int rw,
       int dma,

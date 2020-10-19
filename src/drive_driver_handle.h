@@ -63,6 +63,28 @@ class DriveDriverHandle {
     return { DPARME_NOT_SUPPORTED, 0 };
   }
 
+  virtual bool driverIsAtaCmdSupported() const {
+    return false;
+  }
+
+  virtual DparmResult doAtaCmd(
+      int rw,
+      unsigned char* cdb,
+      unsigned int cdb_bytes,
+      void *data,
+      unsigned int data_bytes,
+      int pack_id,
+      unsigned int timeout_secs,
+      unsigned char *sense_buf,
+      unsigned int sense_buf_bytes
+      ) {
+    return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  virtual bool driverIsTaskfileCmdSupported() const {
+    return false;
+  }
+
   virtual DparmResult doTaskfileCmd(
       int rw,
       int dma,
@@ -74,12 +96,24 @@ class DriveDriverHandle {
     return { DPARME_NOT_SUPPORTED, 0 };
   }
 
+  virtual bool driverIsNvmeAdminPassthruSupported() const {
+    return false;
+  }
+
   virtual DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t* cmd) {
     return { DPARME_NOT_SUPPORTED, 0 };
   }
 
+  virtual bool driverIsNvmeIoPassthruSupported() const {
+    return false;
+  }
+
   virtual DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t* cmd) {
     return { DPARME_NOT_SUPPORTED, 0 };
+  }
+
+  virtual bool driverIsNvmeIoSupported() const {
+    return false;
   }
 
   virtual DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t* io) {

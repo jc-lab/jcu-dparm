@@ -241,6 +241,16 @@ struct scsi_sg_device {
 
 __u64 tf_to_lba (ata::ata_tf_t *tf);
 
+int do_sg_ata(
+    scsi_sg_device *dev,
+    int rw,
+    unsigned char* cdb, unsigned int cdb_bytes,
+    void *data, unsigned int data_bytes,
+    int pack_id,
+    unsigned int timeout_secs,
+    unsigned char *sense_data, unsigned int sense_buf_size
+    );
+
 /**
  *
  * @param dev

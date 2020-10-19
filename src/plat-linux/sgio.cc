@@ -219,6 +219,119 @@ int sgio_dbgprintf(scsi_sg_device *dev, const char* fmt, ...) {
   return 0;
 }
 
+int do_sg_ata(
+    scsi_sg_device *dev,
+    int rw,
+    unsigned char* cdb, unsigned int cdb_bytes,
+    void *data, unsigned int data_bytes,
+    int pack_id,
+    unsigned int timeout_secs,
+    unsigned char *sense_data, unsigned int sense_buf_size
+) {
+  unsigned char sb[32], *desc;
+  unsigned char *sb_ptr = sense_data ? sense_data : sb;
+  int sb_size = sense_data ? sense_buf_size : sizeof(sb);
+  int return_code = 0;
+  struct scsi_sg_io_hdr io_hdr;
+
+  unsigned char res_status = 0;
+  unsigned char res_error = 0;
+
+  memset(sb_ptr, 0, sb_size);
+  memset(&io_hdr, 0, sizeof(struct scsi_sg_io_hdr));
+  if (data && data_bytes && !rw)
+    memset(data, 0, data_bytes);
+
+  io_hdr.interface_id = 'S';
+  io_hdr.mx_sb_len = sb_size;
+  io_hdr.dxfer_direction = data ? (rw ? SG_DXFER_TO_DEV : SG_DXFER_FROM_DEV) : SG_DXFER_NONE;
+  io_hdr.dxfer_len = data ? data_bytes : 0;
+  io_hdr.dxferp = data;
+  io_hdr.cmdp = cdb;
+  io_hdr.cmd_len = cdb_bytes;
+  io_hdr.sbp = sb_ptr;
+  io_hdr.pack_id = pack_id;
+  io_hdr.timeout = (timeout_secs ? timeout_secs : default_timeout_secs) * 1000; /* msecs */
+
+  if (dev->verbose) {
+    dump_bytes(dev, "outgoing cdb", cdb, cdb_bytes);
+    if (rw && data)
+      dump_bytes(dev, "outgoing_data", data, data_bytes);
+  }
+
+  if (ioctl(dev->fd, SG_IO, &io_hdr) == -1) {
+    dev->last_errno = errno;
+    if (dev->verbose)
+      perror("ioctl(fd,SG_IO)");
+    return -1;    /* SG_IO not supported */
+  }
+
+  if (dev->verbose)
+    sgio_dbgprintf(dev, "SG_IO: ATA_%u status=0x%x, host_status=0x%x, driver_status=0x%x\n",
+                   io_hdr.cmd_len, io_hdr.status, io_hdr.host_status, io_hdr.driver_status);
+
+  if (io_hdr.status && io_hdr.status != SG_CHECK_CONDITION) {
+    if (dev->verbose)
+      sgio_dbgprintf(dev, "SG_IO: bad status: 0x%x\n", io_hdr.status);
+    errno = EBADE;
+    return -1;
+  }
+  if (io_hdr.host_status) {
+    if (dev->verbose)
+      sgio_dbgprintf(dev, "SG_IO: bad host status: 0x%x\n", io_hdr.host_status);
+    errno = EBADE;
+    return -1;
+  }
+  if (dev->verbose) {
+    dump_bytes(dev, "SG_IO: sb[]", sb_ptr, sb_size);
+    if (!rw && data)
+      dump_bytes(dev, "incoming_data", data, data_bytes);
+  }
+
+  if (io_hdr.driver_status && (io_hdr.driver_status != SG_DRIVER_SENSE)) {
+    if (dev->verbose)
+      sgio_dbgprintf(dev, "SG_IO: bad driver status: 0x%x\n", io_hdr.driver_status);
+    errno = EBADE;
+    return -1;
+  }
+
+  desc = sb_ptr + 8;
+  if (io_hdr.driver_status != SG_DRIVER_SENSE) {
+    if (sb_ptr[0] | sb_ptr[1] | sb_ptr[2] | sb_ptr[3] | sb_ptr[4] | sb_ptr[5] | sb_ptr[6] | sb_ptr[7] | sb_ptr[8] | sb_ptr[9]) {
+      static int second_try = 0;
+      if (!second_try++)
+        sgio_dbgprintf(dev, "SG_IO: questionable sense data, results may be incorrect\n");
+    }
+  } else if (sb_ptr[0] != 0x72 || sb_ptr[7] < 14 || desc[0] != 0x09 || desc[1] < 0x0c) {
+    dump_bytes(dev, "SG_IO: bad/missing sense data, sb_ptr[]", sb_ptr, sb_size);
+    return_code = 1;
+  }
+
+  if (dev->verbose) {
+    unsigned int len = desc[1] + 2, maxlen = sb_size - 8 - 2;
+    if (len > maxlen)
+      len = maxlen;
+    dump_bytes(dev, "SG_IO: desc[]", desc, len);
+  }
+
+  res_status = desc[13];
+  res_error = desc[3];
+
+  if (dev->verbose)
+    sgio_dbgprintf(dev, "      ATA_%u stat=%02x err=%02x\n",
+                   io_hdr.cmd_len, res_status, res_error);
+
+  if (res_status & (ATA_STAT_ERR | ATA_STAT_DRQ)) {
+    if (dev->verbose) {
+      sgio_dbgprintf(dev, "I/O error, ata_status=0x%02x ata_error=0x%02x\n",
+                     res_status, res_error);
+    }
+    errno = EIO;
+    return -1;
+  }
+  return return_code;
+}
+
 int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
          void *data, unsigned int data_bytes, unsigned int timeout_secs,
          unsigned char *sense_data, int sense_buf_size

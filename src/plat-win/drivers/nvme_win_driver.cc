@@ -178,6 +178,10 @@ class NvmeWinDriverHandle : public WindowsDriverHandle {
     return device_path_;
   }
 
+  bool driverIsNvmeAdminPassthruSupported() const override {
+    return true;
+  }
+
   DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t *cmd) override {
     NVME_PASS_THROUGH_IOCTL nptwb;
     PNVMe_COMMAND pcommand = (PNVMe_COMMAND)nptwb.NVMeCmd;
@@ -211,9 +215,19 @@ class NvmeWinDriverHandle : public WindowsDriverHandle {
 
     return { DPARME_OK, 0, 0 };
   }
+
+  bool driverIsNvmeIoPassthruSupported() const override {
+    return true;
+  }
+
   DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t *cmd) override {
     return DriveDriverHandle::doNvmeIoPassthru(cmd);
   }
+
+  bool driverIsNvmeIoSupported() const override {
+    return true;
+  }
+
   DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t *io) override {
     return DriveDriverHandle::doNvmeIo(io);
   }

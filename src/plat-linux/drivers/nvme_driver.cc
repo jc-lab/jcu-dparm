@@ -56,6 +56,10 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     return result;
   }
 
+  bool driverIsNvmeAdminPassthruSupported() const override {
+    return true;
+  }
+
   DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t *cmd) override {
     nvme_ioctl_admin_cmd_t data = {0};
     data.opcode = cmd->opcode;
@@ -86,6 +90,10 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     return { DPARME_OK, 0, rc, rc };
   }
 
+  bool driverIsNvmeIoPassthruSupported() const override {
+    return true;
+  }
+
   DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t *cmd) override {
     nvme_ioctl_passthru_cmd_t data = {0};
     data.opcode = cmd->opcode;
@@ -114,6 +122,10 @@ class NvmeDriverHandle : public LinuxDriverHandle {
       return { DPARME_NVME_FAILED, 0, rc, {} };
     }
     return { DPARME_OK, 0, rc, rc };
+  }
+
+  bool driverIsNvmeIoSupported() const override {
+    return true;
   }
 
   DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t *io) override {

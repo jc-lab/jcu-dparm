@@ -54,6 +54,10 @@ class DriveHandleBase : public DriveHandle {
     return drive_info_;
   }
 
+  bool driverIsTaskfileCmdSupported() const override {
+    return getDriverHandle()->driverIsTaskfileCmdSupported();
+  }
+
   DparmResult doTaskfileCmd(
       int rw,
       int dma,
@@ -65,12 +69,42 @@ class DriveHandleBase : public DriveHandle {
     return getDriverHandle()->doTaskfileCmd(rw, dma, tf, data, data_bytes, timeout_secs);
   }
 
+  bool driverIsAtaCmdSupported() const override {
+    return getDriverHandle()->driverIsAtaCmdSupported();
+  }
+
+  DparmResult doAtaCmd(
+      int rw,
+      unsigned char* cdb,
+      unsigned int cdb_bytes,
+      void *data,
+      unsigned int data_bytes,
+      int pack_id,
+      unsigned int timeout_secs,
+      unsigned char *sense_buf,
+      unsigned int sense_buf_bytes
+  ) override {
+    return getDriverHandle()->doAtaCmd(rw, cdb, cdb_bytes, data, data_bytes, pack_id, timeout_secs, sense_buf, sense_buf_bytes);
+  }
+
+  bool driverIsNvmeAdminPassthruSupported() const {
+    return getDriverHandle()->driverIsNvmeAdminPassthruSupported();
+  }
+
   DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t* cmd) override {
     return getDriverHandle()->doNvmeAdminPassthru(cmd);
   }
 
+  bool driverIsNvmeIoPassthruSupported() const override {
+    return getDriverHandle()->driverIsNvmeIoPassthruSupported();
+  }
+
   DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t* cmd) override {
     return getDriverHandle()->doNvmeIoPassthru(cmd);
+  }
+
+  bool driverIsNvmeIoSupported() const override {
+    return getDriverHandle()->driverIsNvmeIoSupported();
   }
 
   DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t* io) override {

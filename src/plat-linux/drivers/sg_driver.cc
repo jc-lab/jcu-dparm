@@ -56,6 +56,34 @@ class SgDriverHandle : public LinuxDriverHandle {
     }
   }
 
+  bool driverIsAtaCmdSupported() const override {
+    return true;
+  }
+
+  DparmResult doAtaCmd(
+      int rw,
+      unsigned char* cdb,
+      unsigned int cdb_bytes,
+      void *data,
+      unsigned int data_bytes,
+      int pack_id,
+      unsigned int timeout_secs,
+      unsigned char *sense_buf,
+      unsigned int sense_buf_bytes
+  ) override {
+    int rc = do_sg_ata(&dev_, rw, cdb, cdb_bytes, data, data_bytes, pack_id, timeout_secs, sense_buf, sense_buf_bytes);
+    if (rc > 0) {
+      return { DPARME_ATA_FAILED, rc };
+    }else if (rc < 0 ) {
+      return { DPARME_SYS, errno };
+    }
+    return { DPARME_OK, 0 };
+  }
+
+  bool driverIsTaskfileCmdSupported() const override {
+    return true;
+  }
+
   DparmResult doTaskfileCmd(
       int rw,
       int dma,

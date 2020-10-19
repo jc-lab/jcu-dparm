@@ -33,6 +33,7 @@ class DriveHandle {
   virtual const std::vector<unsigned char> getNvmeIdentifyDeviceRaw() const = 0;
 
   /* ATA Low-level methods */
+  virtual bool driverIsTaskfileCmdSupported() const = 0;
   virtual DparmResult doTaskfileCmd(
       int rw,
       int dma,
@@ -42,9 +43,25 @@ class DriveHandle {
       unsigned int timeout_secs
   ) = 0;
 
+  virtual bool driverIsAtaCmdSupported() const = 0;
+  virtual DparmResult doAtaCmd(
+      int rw,
+      unsigned char* cdb,
+      unsigned int cdb_bytes,
+      void *data,
+      unsigned int data_bytes,
+      int pack_id,
+      unsigned int timeout_secs,
+      unsigned char *sense_buf,
+      unsigned int sense_buf_bytes
+  ) = 0;
+
   /* NVMe Low-level methods */
+  virtual bool driverIsNvmeAdminPassthruSupported() const = 0;
   virtual DparmReturn<int> doNvmeAdminPassthru(nvme::nvme_admin_cmd_t* cmd) = 0;
+  virtual bool driverIsNvmeIoPassthruSupported() const = 0;
   virtual DparmReturn<int> doNvmeIoPassthru(nvme::nvme_passthru_cmd_t* cmd) = 0;
+  virtual bool driverIsNvmeIoSupported() const = 0;
   virtual DparmReturn<int> doNvmeIo(nvme::nvme_user_io_t* io) = 0;
   virtual DparmResult doNvmeGetLogPageCmd(
       uint32_t nsid, uint8_t log_id,
