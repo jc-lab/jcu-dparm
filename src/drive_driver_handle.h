@@ -122,6 +122,14 @@ class DriveDriverHandle {
     return { DPARME_NOT_SUPPORTED, 0 };
   }
 
+  virtual bool driverHasSpecificNvmeGetLogPage() const {
+    return false;
+  }
+
+  virtual DparmResult doNvmeGetLogPage(uint32_t nsid, uint8_t log_id, bool rae, uint32_t data_len, void *data) {
+    return { DPARME_NOT_IMPL, 0 };
+  }
+
   virtual DparmResult doSecurityCommand(uint8_t protocol, uint16_t com_id, int rw, void *buffer, uint32_t len, int timeout) {
     return { DPARME_NOT_IMPL, 0 };
   }

@@ -57,6 +57,38 @@ class WindowsNvmeDriverHandle : public WindowsDriverHandle {
   DparmResult doSecurityCommand(uint8_t protocol, uint16_t com_id, int rw, void *buffer, uint32_t len, int timeout) override {
     return ScsiDriver::doSecurityCommandImpl(handle_, protocol, com_id, rw, buffer, len, timeout);
   }
+
+  bool driverHasSpecificNvmeGetLogPage() const override {
+    return true;
+  }
+
+  DparmResult doNvmeGetLogPage(uint32_t nsid, uint8_t log_id, bool rae, uint32_t data_len, void *data) override  {
+    windows10::TStorageQueryWithBuffer nptwb;
+    DWORD dwReturned = 0;
+    int werr = 0;
+
+    ZeroMemory(&nptwb, sizeof(nptwb));
+
+    nptwb.protocol_specific.ProtocolType = ProtocolTypeNvme;
+    nptwb.protocol_specific.DataType = NVMeDataTypeLogPage;
+    nptwb.protocol_specific.ProtocolDataRequestValue = log_id;
+    nptwb.protocol_specific.ProtocolDataRequestSubValue = 0;
+    nptwb.protocol_specific.ProtocolDataRequestSubValue2 = 0;
+    nptwb.protocol_specific.ProtocolDataOffset = sizeof(nptwb.protocol_specific);
+    nptwb.protocol_specific.ProtocolDataLength = (sizeof(nptwb.buffer) > data_len) ? data_len : sizeof(nptwb.buffer);
+    nptwb.query.PropertyId = StorageAdapterProtocolSpecificProperty;
+    nptwb.query.QueryType = PropertyStandardQuery;
+
+    if (!DeviceIoControl(handle_, IOCTL_STORAGE_QUERY_PROPERTY,
+                         &nptwb, sizeof(nptwb), &nptwb, sizeof(nptwb), &dwReturned, NULL)) {
+      werr = (int) ::GetLastError();
+      return { DPARME_SYS, werr };
+    }
+
+    memcpy(data, nptwb.buffer, nptwb.protocol_specific.ProtocolDataLength);
+
+    return { DPARME_OK, 0 };
+  }
 };
 
 DparmReturn<std::unique_ptr<WindowsDriverHandle>> WindowsNvmeDriver::open(const char *path) {
