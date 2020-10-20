@@ -274,7 +274,7 @@ typedef struct nvme_passthru_cmd {
   uint32_t cdw2;
   uint32_t cdw3;
   uint64_t metadata;
-  uint64_t addr;
+  void* addr;
   uint32_t metadata_len;
   uint32_t data_len;
   uint32_t cdw10;

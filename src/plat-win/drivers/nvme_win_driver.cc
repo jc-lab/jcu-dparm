@@ -217,6 +217,8 @@ class NvmeWinDriverHandle : public WindowsDriverHandle {
       return { DPARME_IOCTL_FAILED, (int)::GetLastError(), 0 };
     }
 
+    memcpy(cmd->addr, nptwb.DataBuffer, cmd->data_len);
+
     return { DPARME_OK, 0, 0 };
   }
 

@@ -49,7 +49,7 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     nvme::nvme_admin_cmd_t identify_cmd = { 0 };
     identify_cmd.opcode = nvme::NVME_ADMIN_OP_IDENTIFY;
     identify_cmd.nsid = 0;
-    identify_cmd.addr = (uint64_t)identify_buf.data();
+    identify_cmd.addr = identify_buf.data();
     identify_cmd.data_len = 4096;
     identify_cmd.cdw10 = 1;
     identify_cmd.cdw11 = 0;
@@ -73,7 +73,7 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     data.cdw2 = cmd->cdw2;
     data.cdw3 = cmd->cdw3;
     data.metadata = cmd->metadata;
-    data.addr = cmd->addr;
+    data.addr = (uint64_t)cmd->addr;
     data.metadata_len = cmd->metadata_len;
     data.data_len = cmd->data_len;
     data.cdw10 = cmd->cdw10;
@@ -107,7 +107,7 @@ class NvmeDriverHandle : public LinuxDriverHandle {
     data.cdw2 = cmd->cdw2;
     data.cdw3 = cmd->cdw3;
     data.metadata = cmd->metadata;
-    data.addr = cmd->addr;
+    data.addr = (uint64_t)cmd->addr;
     data.metadata_len = cmd->metadata_len;
     data.data_len = cmd->data_len;
     data.cdw10 = cmd->cdw10;

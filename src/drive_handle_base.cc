@@ -150,7 +150,7 @@ DparmResult DriveHandleBase::doNvmeGetLogPageCmd(
   nvme::nvme_admin_cmd_t cmd = { 0 };
   cmd.opcode = nvme::NVME_ADMIN_OP_GET_LOG_PAGE;
   cmd.nsid = nsid;
-  cmd.addr = (uint64_t)data;
+  cmd.addr = data;
   cmd.data_len = data_len;
   cmd.cdw10 = cdw10;
   cmd.cdw11 = numdh | (lsi << 16U);
@@ -201,7 +201,7 @@ DparmResult DriveHandleBase::doSecurityCommand(int rw, int dma, uint8_t protocol
   if (driver_handle->isNvmeCommandSupport()) {
     nvme::nvme_admin_cmd_t cmd = { 0 };
     cmd.opcode = (uint8_t)(rw ? nvme::NVME_ADMIN_OP_SECURITY_SEND : nvme::NVME_ADMIN_OP_SECURITY_RECV);
-    cmd.addr = (uint64_t)buffer;
+    cmd.addr = buffer;
     cmd.data_len = len;
     cmd.cdw10 = ((((uint32_t)protocol) & 0xff) << 24) | ((((uint32_t)com_id) & 0xffff) << 8);
     cmd.cdw11 = len;
