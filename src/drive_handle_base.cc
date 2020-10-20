@@ -380,7 +380,7 @@ DparmReturn<SMARTStatus> DriveHandleBase::readAtaSmartStatus() {
           dst.current = src.current;
           dst.worst = src.worst;
           dst.raw.clear();
-          dst.raw.insert(dst.raw.end(), &src.raw[0], &src.raw[sizeof(src.raw[0])]);
+          dst.raw.insert(dst.raw.end(), &src.raw[0], &src.raw[sizeof(src.raw)]);
         }
       }
 
