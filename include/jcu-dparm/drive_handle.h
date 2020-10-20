@@ -86,6 +86,9 @@ class DriveHandle {
    *          IT IS MANAGED BY DriveHandleBase
    */
   virtual tcg::TcgDevice* getTcgDevice() = 0;
+
+  virtual DparmReturn<nvme::nvme_smart_log_page_t> readNvmeSmartLogPage() = 0;
+  virtual DparmReturn<SMARTStatus> readAtaSmartStatus() = 0;
 };
 
 } // namespace dparm

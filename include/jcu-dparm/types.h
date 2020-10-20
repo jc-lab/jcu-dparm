@@ -57,6 +57,8 @@ struct DriveInfo {
   bool is_ssd;
   int ssd_check_weight;
 
+  bool smart_enabled;
+
   /**
    * 0 : Not supported
    * 1 : Supported
@@ -92,6 +94,7 @@ struct DriveInfo {
     memset(&nvme_identify_ctrl, 0, sizeof(nvme_identify_ctrl));
     is_ssd = false;
     ssd_check_weight = 0;
+    smart_enabled = false;
     support_sanitize_crypto_erase = false;
     support_sanitize_block_erase = false;
     support_sanitize_overwrite = false;
@@ -105,6 +108,26 @@ struct DriveInfo {
     tcg_single_user_mode = false;
     tcg_datastore = false;
   }
+};
+
+struct SMARTAttribute {
+  uint8_t id;
+  uint16_t flags;
+  uint8_t current;
+  uint8_t worst;
+  uint8_t threshold;
+  std::vector<unsigned char> raw;
+
+  SMARTAttribute()
+  : id(0), flags(0), current(0), worst(0), threshold(0)
+  {}
+};
+
+struct SMARTStatus {
+  uint16_t smart_capability;
+  std::vector<SMARTAttribute> attributes;
+  SMARTStatus()
+  : smart_capability(0) {}
 };
 
 /**

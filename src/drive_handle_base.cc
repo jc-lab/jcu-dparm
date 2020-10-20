@@ -90,6 +90,7 @@ int DriveHandleBase::parseIdentifyDevice() {
       drive_info_.raw_serial[i + 1] = data.serial_number[i];
     }
     drive_info_.serial = intl::trimString(intl::fixAtaStringOrder(data.serial_number, sizeof(data.serial_number), true));
+    drive_info_.smart_enabled = data.command_set_support.smart_commands && data.command_set_active.smart_commands;
     if (data.sanitize_feature_supported) {
       if (data.security_status.security_enabled) {
         drive_info_.support_sanitize_block_erase = data.block_erase_ext_command_supported ? 1 : 0;
@@ -123,6 +124,8 @@ int DriveHandleBase::parseIdentifyDevice() {
 
     drive_info_.ssd_check_weight = 0;
     drive_info_.is_ssd = true;
+
+    drive_info_.smart_enabled = true; // TODO: Check...
 
     {
       drive_info_.support_sanitize_crypto_erase = (data.sanicap & 0x01) != 0;
@@ -159,6 +162,11 @@ DparmResult DriveHandleBase::doNvmeGetLogPageCmd(
 }
 
 DparmResult DriveHandleBase::doNvmeGetLogPage(uint32_t nsid, uint8_t log_id, bool rae, uint32_t data_len, void *data) {
+  auto driver_handle = getDriverHandle();
+  if (driver_handle->driverHasSpecificNvmeGetLogPage()) {
+    return driver_handle->doNvmeGetLogPage(nsid, log_id, rae, data_len, data);
+  }
+
   uint32_t offset = 0, xfer_len = data_len;
   uint8_t *ptr = (uint8_t*)data;
   DparmResult ret;
@@ -303,6 +311,96 @@ tcg::TcgDevice *DriveHandleBase::getTcgDevice() {
     }
   }
   return tcg_device_.get();
+}
+
+DparmReturn<nvme::nvme_smart_log_page_t> DriveHandleBase::readNvmeSmartLogPage() {
+  auto driver_handle = getDriverHandle();
+  if (driver_handle->getDrivingType() == kDrivingNvme) {
+    nvme::nvme_smart_log_page_t page;
+    memset(&page, 0, sizeof(page));
+    DparmResult dres = doNvmeGetLogPage(0xFFFFFFFFU, nvme::NVME_GET_LOG_PAGE_SMART, false, sizeof(page), &page);
+    return {dres, page};
+  }
+  return { DPARME_NOT_IMPL, 0 };
+}
+
+DparmReturn<SMARTStatus> DriveHandleBase::readAtaSmartStatus() {
+  auto driver_handle = getDriverHandle();
+  DparmResult dres;
+  SMARTStatus smart_status;
+  if (driver_handle->getDrivingType() == kDrivingAtapi) {
+    ata::ata_tf_t tf = {0};
+    ata::ata_smart_attribute_values_t values;
+    ata::ata_smart_attribute_thresholds_t thresholds;
+    memset(&values, 0, sizeof(values));
+    memset(&thresholds, 0, sizeof(thresholds));
+
+    do {
+      int temp_count = 0;
+
+      memset(&tf, 0, sizeof(tf));
+      tf.command = ata::ATA_OP_SMART;
+      tf.lob.feat = ata::SMART_FEAT_READ_ATTRIBUTE_VALUES;
+      tf.lob.lbah = ata::SMART_LBA_HIGH;
+      tf.lob.lbam = ata::SMART_LBA_LOW;
+      tf.lob.nsect = 1;
+      dres = driver_handle->doTaskfileCmd(0, 0, &tf, &values, sizeof(values), 15);
+      if (!dres.isOk()) {
+        break;
+      }
+
+      memset(&tf, 0, sizeof(tf));
+      tf.command = ata::ATA_OP_SMART;
+      tf.lob.feat = ata::SMART_FEAT_READ_ATTRIBUTE_THRESHOLDS;
+      tf.lob.lbah = ata::SMART_LBA_HIGH;
+      tf.lob.lbam = ata::SMART_LBA_LOW;
+      tf.lob.nsect = 1;
+      dres = driver_handle->doTaskfileCmd(0, 0, &tf, &thresholds, sizeof(thresholds), 15);
+      if (!dres.isOk()) {
+        break;
+      }
+
+      smart_status.smart_capability = values.smart_capability;
+
+      temp_count = 0;
+      for (int i = 0; i < ata::ATA_SMART_ATTRIBUTES_NUMBER; i++) {
+        const auto& attr = values.attributes[i];
+        if (attr.id)
+          temp_count++;
+      }
+      smart_status.attributes.resize(temp_count);
+
+      temp_count = 0;
+      for (int i = 0; i < ata::ATA_SMART_ATTRIBUTES_NUMBER; i++) {
+        const auto& src = values.attributes[i];
+        if (src.id) {
+          auto& dst = smart_status.attributes[temp_count++];
+          dst.id = src.id;
+          dst.flags = src.flags;
+          dst.current = src.current;
+          dst.worst = src.worst;
+          dst.raw.clear();
+          dst.raw.insert(dst.raw.end(), &src.raw[0], &src.raw[sizeof(src.raw[0])]);
+        }
+      }
+
+      temp_count = 0;
+      for (int i = 0; i < ata::ATA_SMART_ATTRIBUTES_NUMBER; i++) {
+        const auto& src = thresholds.attributes[i];
+        if (src.id) {
+          for(auto found_it = smart_status.attributes.begin(); found_it != smart_status.attributes.end(); found_it++) {
+            if (found_it->id == src.id) {
+              found_it->threshold = src.threshold;
+              break;
+            }
+          }
+        }
+      }
+    } while(0);
+
+    return { dres, smart_status };
+  }
+  return { DPARME_NOT_IMPL, 0 };
 }
 
 } // namespace dparm

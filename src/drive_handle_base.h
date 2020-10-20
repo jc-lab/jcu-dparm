@@ -133,6 +133,9 @@ class DriveHandleBase : public DriveHandle {
 
   tcg::TcgDevice* getTcgDevice() override;
 
+  DparmReturn<nvme::nvme_smart_log_page_t> readNvmeSmartLogPage() override;
+  DparmReturn<SMARTStatus> readAtaSmartStatus() override;
+
 // public:
 //  DrivingType getDrivingType() override {
 //    return driving_type_;

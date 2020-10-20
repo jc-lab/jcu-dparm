@@ -215,6 +215,17 @@ enum NvmeGetLogPageCommand {
 
 /**
  * NVM_Express_Revision_1.3.pdf
+ * Figure 90 : Get Log Page - Log Page Identifiers
+ */
+enum NvmeGetLogPageIdentifier {
+  NVME_GET_LOG_PAGE_RESERVED = 0x00,
+  NVME_GET_LOG_PAGE_ERROR_INFO = 0x01,
+  NVME_GET_LOG_PAGE_SMART = 0x02,
+  NVME_GET_LOG_PAGE_FIRMWARE_SLOT_INFO = 0x03,
+};
+
+/**
+ * NVM_Express_Revision_1.3.pdf
  * Figure 178 : Sanitize - Command Dword 10
  */
 enum NvmeSanitizeCommand {
@@ -429,6 +440,37 @@ typedef struct nvme_sanitize_log_page {
   le32_t est_block_erase_time_with_no_deallocate;
   le32_t est_crypto_erase_time_with_no_deallocate;
 } nvme_sanitize_log_page_t;
+
+
+
+/**
+ * NVM_Express_Revision_1.3.pdf
+ * 5.14.1.2 SMART/Health Information (Log Identifier 02h)
+ */
+typedef struct nvme_smart_log_page {
+  uint8_t critical_warning;
+  uint16_t composite_temperature;
+  uint8_t available_spare;
+  uint8_t available_spare_threshold;
+  uint8_t percentage_used;
+  uint8_t rev01[26];
+  uint8_t data_units_read[16];
+  uint8_t data_units_written[16];
+  uint8_t host_read_commands[16];
+  uint8_t host_write_commands[16];
+  uint8_t controller_busy_time[16];
+  uint8_t power_cycles[16];
+  uint8_t power_on_hours[16];
+  uint8_t unsafe_shutdowns[16];
+  uint8_t media_and_data_integrity_errors[16];
+  uint8_t number_of_error_information_log_entries[16];
+  uint8_t warning_composite_temperature_time[4];
+  uint8_t critical_composite_temperature_time[4];
+  uint16_t temperature_sensor[8];
+  uint32_t thermal_management_temperature_transition_count[2];
+  uint32_t total_time_for_thermal_management_temperature[2];
+  uint8_t rev_remaining[280];
+} nvme_smart_log_page_t;
 
 #pragma pack(pop)
 

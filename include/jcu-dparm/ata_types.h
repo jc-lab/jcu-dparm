@@ -99,6 +99,31 @@ enum {
   LBA48_FORCE		= 1,
 };
 
+/**
+ * Working Draft ATA Command Set - 4 (ACS-4)
+ * 7.44 SMART, Table 133 - FEATURE field values
+ *
+ * SFF-8035R2
+ */
+enum {
+  SMART_FEAT_READ_ATTRIBUTE_VALUES = 0xd0,
+  SMART_FEAT_READ_ATTRIBUTE_THRESHOLDS = 0xd1,
+  SMART_FEAT_EXECUTE_OFFLINE_IMMEDIATE = 0xd4,
+  SMART_FEAT_READ_LOG = 0xd5,
+  SMART_FEAT_WRITE_LOG = 0xd6,
+  SMART_FEAT_RETURN_STATUS = 0xda,
+};
+
+enum {
+  SMART_LBA_HIGH = 0xc2,
+  SMART_LBA_LOW = 0x4f,
+};
+
+enum {
+  SMART_RETURN_STATUS_HI_EXCEEDED = 0x2c,
+  SMART_RETURN_STATUS_MID_EXCEEDED = 0xf4
+};
+
 #pragma pack(push, 1)
 
 /*
@@ -607,6 +632,84 @@ typedef struct ata_identify_device_data {
   uint16_t check_sum : 8;
 
 } ata_identify_device_data_t;
+
+enum {
+  ATA_SMART_ATTRIBUTES_NUMBER = 30
+};
+
+// 12
+typedef struct ata_smart_attribute {
+  uint8_t id;
+  /**
+   * Status flag
+   * Bit 0 (pre-failure/advisory bit)
+   * Bit 1 (on-line data collection bit)
+   * Bits 2-5 (vendor specific)
+   * Bits 6-15 (Reserved)
+   */
+  uint16_t flags;
+  uint8_t current;
+  uint8_t worst;
+  uint8_t raw[6];
+  uint8_t reserved01;
+} ata_smart_attribute_t;
+
+typedef struct ata_smart_attribute_threshold {
+  uint8_t id;
+  uint8_t threshold;
+  uint8_t reserved01[10];
+} ata_smart_attribute_threshold_t;
+
+/**
+ * ATA8-ACS
+ * Table 49 — Device SMART data structure
+ *
+ * SFF-8035R2
+ */
+typedef struct ata_smart_attribute_values {
+  uint16_t rev_number;
+  ata_smart_attribute_t attributes[ATA_SMART_ATTRIBUTES_NUMBER];
+  uint8_t offline_data_collection_status;
+  uint8_t self_test_exec_status;
+  uint16_t total_time_to_complete_offline_data_collection_activity;
+  uint8_t vendor_specific_366;
+  uint8_t offline_data_collection_capability;
+  uint16_t smart_capability;
+  /**
+   * 7-1: Reserved
+   *   0: device error logging supported
+   */
+  uint8_t errorlog_capability;
+  uint8_t vendor_specific_371;
+  /**
+   * Unit: minutes
+   */
+  uint8_t short_selftest_routine_recommanded_polling_time;
+  /**
+   * Extended self-test routine recommended polling time (7:0) in minutes.
+   * If FFh, use bytes 375 and 376 for the polling time.
+   */
+  uint8_t extended_selftest_routine_recommanded_polling_time_a;
+  uint8_t conveyance_selftest_routine_recommanded_polling_time;
+  uint8_t extended_selftest_routine_recommanded_polling_time_b[2];
+  uint8_t reserved01[9];
+  uint8_t vendor_specific_386[125];
+  uint8_t checksum;
+} ata_smart_attribute_values_t;
+
+/**
+ * ATA8-ACS
+ * Table 49 — Device SMART data structure
+ *
+ * SFF-8035R2 Table 3
+ */
+typedef struct ata_smart_attribute_thresholds {
+  uint16_t rev_number;
+  ata_smart_attribute_threshold_t attributes[ATA_SMART_ATTRIBUTES_NUMBER];
+  uint8_t reserved01[18];
+  uint8_t vendor_specific_380[131];
+  uint8_t checksum;
+} ata_smart_attribute_thresholds_t;
 
 #pragma pack(pop)
 

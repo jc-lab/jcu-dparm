@@ -57,6 +57,18 @@ struct DparmReturn : DparmResult {
   DparmReturn(DparmCode _code, int _sys_error, int32_t _drive_status, T&& _value) : DparmResult(_code, _sys_error, _drive_status), value(std::move(_value)) {}
   DparmReturn(const DparmResult& _result, const T& _value) : DparmResult(_result), value(_value) {}
   DparmReturn(const DparmResult& _result, T&& _value) : DparmResult(_result), value(std::move(_value)) {}
+  DparmReturn(const DparmReturn<T>& rhs) : DparmResult(rhs), value(rhs.value) {}
+  DparmReturn(DparmReturn<T>&& rhs) noexcept : DparmResult(rhs), value(std::move(rhs.value)) {}
+  DparmReturn<T>& operator=(const DparmReturn<T>& rhs) {
+    DparmResult::operator=(rhs);
+    value = rhs.value;
+    return *this;
+  }
+  DparmReturn<T>& operator=(DparmReturn<T>&& rhs) {
+    DparmResult::operator=(rhs);
+    value = std::move(rhs.value);
+    return *this;
+  }
 };
 
 } // namespace dparm
