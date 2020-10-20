@@ -24,6 +24,10 @@ class NvmeDriverHandle : public LinuxDriverHandle {
   int ns_id_;
 
  public:
+  std::string getDriverName() const override {
+    return "LinuxNvmeDriver";
+  }
+
   NvmeDriverHandle(int fd, int nsid)
       : fd_(fd), ns_id_(nsid) {
     driving_type_ = kDrivingNvme;

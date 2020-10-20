@@ -134,6 +134,10 @@ class AtaDrvierHandle : public WindowsDriverHandle {
   HANDLE handle_;
 
  public:
+  std::string getDriverName() const override {
+    return "WindowsAtaDriver";
+  }
+
   AtaDrvierHandle(const char *device_path, HANDLE handle, ata::ata_identify_device_data_t *identify_device_data)
       : device_path_(device_path), handle_(handle)
   {

@@ -152,6 +152,10 @@ class NvmeWinDriverHandle : public WindowsDriverHandle {
   HANDLE handle_;
 
  public:
+  std::string getDriverName() const override {
+    return "WindowsNvmeWinDriver";
+  }
+
   NvmeWinDriverHandle(const char *device_path, HANDLE handle, NVME_PASS_THROUGH_IOCTL *identify_device_ioctl)
   : device_path_(device_path), handle_(handle)
   {

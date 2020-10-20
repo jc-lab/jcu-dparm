@@ -21,6 +21,10 @@ class SamsungNvmeDriverHandle : public WindowsDriverHandle {
   HANDLE handle_;
 
  public:
+  std::string getDriverName() const override {
+    return "WindowsSamsungNvmeDriver";
+  }
+
   HANDLE getHandle() const override {
     return handle_;
   }

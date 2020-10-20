@@ -25,6 +25,10 @@ class WindowsNvmeDriverHandle : public WindowsDriverHandle {
   HANDLE handle_;
 
  public:
+  std::string getDriverName() const override {
+    return "WindowsNvmeDriver";
+  }
+
   WindowsNvmeDriverHandle(const char *path, HANDLE handle, windows10::TStorageQueryWithBuffer *nptwb)
   : device_path_(path), handle_(handle)
   {

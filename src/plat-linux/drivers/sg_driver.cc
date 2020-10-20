@@ -33,6 +33,10 @@ class SgDriverHandle : public LinuxDriverHandle {
   scsi_sg_device dev_;
 
  public:
+  std::string getDriverName() const override {
+    return "LinuxSgDriver";
+  }
+
   SgDriverHandle(const scsi_sg_device& dev, ata::ata_identify_device_data_t *identify_device_data)
       : dev_(dev) {
     const unsigned char *raw_identify_device_data = (const unsigned char *)identify_device_data;

@@ -50,6 +50,10 @@ class DriveHandleBase : public DriveHandle {
   int parseIdentifyDevice();
 
  public:
+  std::string getDriverName() const {
+    return getDriverHandle()->getDriverName();
+  }
+
   const DriveInfo& getDriveInfo() const override {
     return drive_info_;
   }

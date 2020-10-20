@@ -29,6 +29,8 @@ class DriveHandle {
   virtual void close() = 0;
   virtual const DriveInfo& getDriveInfo() const = 0;
 
+  virtual std::string getDriverName() const = 0;
+
   virtual const std::vector<unsigned char> getAtaIdentifyDeviceRaw() const = 0;
   virtual const std::vector<unsigned char> getNvmeIdentifyDeviceRaw() const = 0;
 
