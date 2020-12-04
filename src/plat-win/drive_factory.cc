@@ -110,6 +110,10 @@ class Win32DriveFactory : public DriveFactory {
       }
     }
 
+    if (found_device_path.empty()) {
+      found_device_path = drive_info.physical_disk_path;
+    }
+
     std::unique_ptr<Win32DriveHandle> drive_handle(new Win32DriveHandle(options_, found_device_path, std::move(driver_handle.value), driver_handle));
     if (driver_handle.isOk()) {
       drive_handle->init();
