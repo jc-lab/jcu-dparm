@@ -24,6 +24,8 @@ namespace dparm {
  */
 class DriveHandle {
  public:
+  virtual ~DriveHandle() {}
+
   virtual bool isOpen() const = 0;
   virtual DparmResult getError() const = 0;
   virtual void close() = 0;
