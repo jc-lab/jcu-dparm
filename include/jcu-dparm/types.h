@@ -15,6 +15,7 @@
 
 #include <string>
 #include <map>
+#include <list>
 #include <vector>
 #include <functional>
 
@@ -108,6 +109,15 @@ struct DriveInfo {
     tcg_single_user_mode = false;
     tcg_datastore = false;
   }
+};
+
+struct VolumeInfo {
+  std::string path;
+  std::string filesystem;
+  std::list<std::string> mount_points;
+
+  VolumeInfo() = default;
+  VolumeInfo(const VolumeInfo& obj) = default;
 };
 
 struct SMARTAttribute {

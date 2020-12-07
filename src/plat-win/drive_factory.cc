@@ -24,6 +24,7 @@
 #include "drivers/windows_nvme_driver.h"
 
 #include "physical_drive_finder.h"
+#include "volume_finder.h"
 
 namespace jcu {
 namespace dparm {
@@ -134,6 +135,12 @@ class Win32DriveFactory : public DriveFactory {
     }
 
     return rc;
+  }
+
+  std::unique_ptr<EnumVolumesContext> enumVolumes() const override {
+    std::unique_ptr<Win32EnumVolumesContext> ctx(new Win32EnumVolumesContext());
+    ctx->init();
+    return std::move(ctx);
   }
 };
 

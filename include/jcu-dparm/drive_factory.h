@@ -22,6 +22,14 @@ namespace jcu {
 namespace dparm {
 
 class DriveHandle;
+
+class EnumVolumesContext {
+ public:
+  virtual DparmResult getResult() const = 0;
+  virtual std::list<VolumeInfo> findVolumesByDrive(const DriveInfo& drive_info) const = 0;
+  virtual std::list<VolumeInfo> getList() const = 0;
+};
+
 class DriveFactory {
  public:
   static DriveFactory* getSystemFactory();
@@ -29,6 +37,8 @@ class DriveFactory {
 
   virtual std::unique_ptr<DriveHandle> open(const char* drive_path) const = 0;
   virtual int enumDrives(std::list<DriveInfo>& result_list) const = 0;
+
+  virtual std::unique_ptr<EnumVolumesContext> enumVolumes() const = 0;
 };
 
 } // namespace dparm

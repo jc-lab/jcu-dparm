@@ -77,6 +77,8 @@ if(MSVC AND WIN32)
             ${SRC_DIR}/plat-win/driver_base.cc
             ${SRC_DIR}/plat-win/physical_drive_finder.cc
             ${SRC_DIR}/plat-win/physical_drive_finder.h
+            ${SRC_DIR}/plat-win/volume_finder.cc
+            ${SRC_DIR}/plat-win/volume_finder.h
             ${SRC_DIR}/plat-win/drivers/driver_utils.h
             ${SRC_DIR}/plat-win/drivers/driver_utils.cc
             ${SRC_DIR}/plat-win/drivers/nvme_win_driver.h
@@ -101,6 +103,8 @@ else()
             ${SRC_DIR}/plat-linux/apt.cc
             ${SRC_DIR}/plat-linux/driver_base.cc
             ${SRC_DIR}/plat-linux/driver_base.h
+            ${SRC_DIR}/plat-linux/volume_finder.cc
+            ${SRC_DIR}/plat-linux/volume_finder.h
             ${SRC_DIR}/plat-linux/drivers/driver_utils.h
             ${SRC_DIR}/plat-linux/drivers/driver_utils.cc
             ${SRC_DIR}/plat-linux/drivers/sg_driver.cc

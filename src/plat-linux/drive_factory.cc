@@ -25,6 +25,8 @@
 #include "drivers/sg_driver.h"
 #include "drivers/nvme_driver.h"
 
+#include "volume_finder.h"
+
 namespace jcu {
 namespace dparm {
 
@@ -115,6 +117,12 @@ class LinuxDriveFactory : public DriveFactory {
     }
     closedir(block_dir);
     return 0;
+  }
+
+  std::unique_ptr<EnumVolumesContext> enumVolumes() const override {
+    std::unique_ptr<LinuxEnumVolumesContext> ctx(new LinuxEnumVolumesContext());
+    ctx->init();
+    return std::move(ctx);
   }
 };
 
