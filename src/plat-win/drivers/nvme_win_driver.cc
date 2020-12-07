@@ -150,6 +150,7 @@ class NvmeWinDriverHandle : public WindowsDriverHandle {
  private:
    std::string device_path_;
   HANDLE handle_;
+  int default_dev_num_;
 
  public:
   std::string getDriverName() const override {
@@ -165,6 +166,23 @@ class NvmeWinDriverHandle : public WindowsDriverHandle {
         &identify_device_ioctl->DataBuffer[0],
         &identify_device_ioctl->DataBuffer[sizeof(identify_device_ioctl->DataBuffer)]
         );
+
+    {
+      const char* PHYSICAL_DRIVE_TEXT = "\\\\.\\PhysicalDrive";
+      if(strstr(device_path, PHYSICAL_DRIVE_TEXT)) {
+        const char* device_number_part = device_path + strlen(PHYSICAL_DRIVE_TEXT);
+        default_dev_num_ = atoi(device_number_part);
+      } else {
+        default_dev_num_ = -1;
+      }
+    }
+  }
+
+  void mergeDriveInfo(DriveInfo &drive_info) const override {
+    WindowsDriverHandle::mergeDriveInfo(drive_info);
+    if (drive_info.windows_dev_num < 0) {
+      drive_info.windows_dev_num = default_dev_num_;
+    }
   }
 
   HANDLE getHandle() const override {
