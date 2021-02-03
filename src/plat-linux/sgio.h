@@ -14,6 +14,7 @@
  */
 
 #include <functional>
+#include <string>
 
 #include <linux/types.h>
 
