@@ -88,6 +88,8 @@ struct DriveInfo {
 
   std::map<uint16_t, std::vector<unsigned char>> tcg_raw_features;
 
+  int64_t total_capacity;
+
   DriveInfo() {
     driving_type = kDrivingUnknown;
     windows_dev_num = -1;
@@ -108,6 +110,7 @@ struct DriveInfo {
     tcg_enterprise = false;
     tcg_single_user_mode = false;
     tcg_datastore = false;
+    total_capacity = -1;
   }
 };
 
