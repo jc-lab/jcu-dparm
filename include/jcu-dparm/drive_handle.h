@@ -91,6 +91,10 @@ class DriveHandle {
 
   virtual DparmReturn<nvme::nvme_smart_log_page_t> readNvmeSmartLogPage() = 0;
   virtual DparmReturn<SMARTStatus> readAtaSmartStatus() = 0;
+
+  virtual uint64_t getAtaLbaCapacity() = 0;
+  virtual DparmReturn<uint64_t> readNativeMaxSectors() = 0;
+  virtual DparmReturn<std::vector<uint16_t>> readDcoIdentify() = 0;
 };
 
 } // namespace dparm

@@ -136,6 +136,10 @@ class DriveHandleBase : public DriveHandle {
   DparmReturn<nvme::nvme_smart_log_page_t> readNvmeSmartLogPage() override;
   DparmReturn<SMARTStatus> readAtaSmartStatus() override;
 
+  DparmReturn<uint64_t> readNativeMaxSectors() override;
+  uint64_t getAtaLbaCapacity() override;
+  DparmReturn<std::vector<uint16_t>> readDcoIdentify() override;
+
 // public:
 //  DrivingType getDrivingType() override {
 //    return driving_type_;
