@@ -37,6 +37,13 @@ class DriveDriverHandle {
   virtual ~DriveDriverHandle() {}
   virtual void close() = 0;
 
+  /**
+   * reopen with O_RDWR (Writable)
+   *
+   * @return 0 if successful, 1 if not implemented, failure if <0.
+   */
+  virtual int reopenWritable() { return 1; }
+
   virtual std::string getDriverName() const = 0;
 
   virtual void mergeDriveInfo(DriveInfo& drive_info) const = 0;

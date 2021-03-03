@@ -31,14 +31,15 @@ namespace drivers {
 class SgDriverHandle : public LinuxDriverHandle {
  private:
   scsi_sg_device dev_;
+  std::string path_;
 
  public:
   std::string getDriverName() const override {
     return "LinuxSgDriver";
   }
 
-  SgDriverHandle(const scsi_sg_device& dev, ata::ata_identify_device_data_t *identify_device_data)
-      : dev_(dev) {
+  SgDriverHandle(const scsi_sg_device& dev, const std::string& path, ata::ata_identify_device_data_t *identify_device_data)
+      : dev_(dev), path_(path) {
     const unsigned char *raw_identify_device_data = (const unsigned char *)identify_device_data;
     driving_type_ = kDrivingAtapi;
 
@@ -58,6 +59,16 @@ class SgDriverHandle : public LinuxDriverHandle {
       ::close(dev_.fd);
       dev_.fd = 0;
     }
+  }
+
+  int reopenWritable() override {
+    int new_fd = ::open(path_.c_str(), O_RDWR | O_NONBLOCK);
+    if (new_fd < 0) {
+      return new_fd;
+    }
+    ::close(dev_.fd);
+    dev_.fd = new_fd;
+    return 0;
   }
 
   bool driverIsAtaCmdSupported() const override {
@@ -173,7 +184,7 @@ DparmReturn<std::unique_ptr<LinuxDriverHandle>> SgDriver::open(const char *path)
   unsigned char sense_data[32];
 
   do {
-    dev.fd = ::open(path, O_RDWR);
+    dev.fd = ::open(path, O_RDONLY | O_NONBLOCK);
     if (dev.fd == -1) {
       result = { DPARME_SYS, errno };
       break;
@@ -192,7 +203,7 @@ DparmReturn<std::unique_ptr<LinuxDriverHandle>> SgDriver::open(const char *path)
       break;
     }
 
-    std::unique_ptr<SgDriverHandle> driver_handle(new SgDriverHandle(dev, &temp));
+    std::unique_ptr<SgDriverHandle> driver_handle(new SgDriverHandle(dev, strpath, &temp));
     return {DPARME_OK, 0, 0, std::move(driver_handle)};
   } while (0);
 
