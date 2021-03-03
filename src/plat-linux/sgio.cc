@@ -332,6 +332,22 @@ int do_sg_ata(
   return return_code;
 }
 
+/**
+ * SCSI ATA PASSTHROUGH
+ *
+ * @param dev            (in) device context
+ * @param rw             (in) SG_READ(0) / SG_WRITE(1)
+ * @param dma            (in) SG_PIO(0) / SG_DMA(1)
+ * @param tf             (in/out) Task File structure
+ * @param data           (in/out) Data Buffer
+ * @param data_bytes     (in)     Data Size
+ * @param timeout_secs   (in)     timeout seconds
+ * @param sense_data     (out)    Sense Buffer
+ * @param sense_buf_size (in)     Sense Buffer Size
+ * @return               zero if successful
+ * @see https://www.t10.org/ftp/t10/document.04/04-262r8.pdf
+ *      TABLE 5 - ATA PASS-THROUGH (16) command CDB format
+ */
 int sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
          void *data, unsigned int data_bytes, unsigned int timeout_secs,
          unsigned char *sense_data, int sense_buf_size
