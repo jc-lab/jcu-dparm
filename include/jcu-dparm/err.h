@@ -40,6 +40,14 @@ struct DparmResult {
   DparmResult() : code(DPARME_OK), sys_error(0), drive_status(0) {}
   DparmResult(DparmCode code, int sys_error) : code(code), sys_error(sys_error), drive_status(0) {}
   DparmResult(DparmCode code, int sys_error, int32_t drive_status) : code(code), sys_error(sys_error), drive_status(drive_status) {}
+  DparmResult(const DparmResult& r)
+      : code(r.code), sys_error(r.sys_error), drive_status(r.drive_status) {}
+  DparmResult& operator=(const DparmResult& r) {
+    code = r.code;
+    sys_error = r.sys_error;
+    drive_status = r.drive_status;
+    return *this;
+  }
 
   bool isOk() const {
     return code == DPARME_OK;
