@@ -40,6 +40,3 @@ if (NOT MSVC)
     target_compile_options(${TYPES_CHECK_TEST_TARGET} PRIVATE -fpermissive)
     target_link_options(${TYPES_CHECK_TEST_TARGET} PRIVATE -pthread)
 endif()
-
-add_executable(sample test.cc)
-target_link_libraries(sample PRIVATE jcu_dparm)
