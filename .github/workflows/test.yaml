@@ -1,0 +1,19 @@
+name: test
+on: [push, pull_request]
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Environment Variables
+        run: |
+          echo "runner_arch=$(uname -m)" >> $GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: test/linux.Dockerfile
+          push: false
