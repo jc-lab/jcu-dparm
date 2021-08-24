@@ -3,6 +3,11 @@ on: [push, pull_request]
 jobs:
   linux-build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        osDist:
+          - alpine
+          - ubuntu
     steps:
       - name: Set Environment Variables
         run: |
@@ -15,5 +20,5 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: test/linux.Dockerfile
+          file: test/${{ matrix.osDist }}.Dockerfile
           push: false
