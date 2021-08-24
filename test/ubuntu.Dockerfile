@@ -12,4 +12,5 @@ ADD [ ".", "/work/src" ]
 RUN mkdir -p /work/build && \
     cd /work/build && \
     cmake /work/src && \
-    cmake --build .
+    cmake --build . && \
+    ctest
