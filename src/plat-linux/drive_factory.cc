@@ -142,7 +142,8 @@ static int debugToStderrPuts(const std::string& text) {
 
 DriveFactory* DriveFactory::getSystemFactory() {
   static DriveFactoryOptions options = {
-      debugToStderrPuts
+      debugToStderrPuts,
+      kVerboseInfo
   };
   static plat_linux::LinuxDriveFactory INSTANCE(options);
   return &INSTANCE;

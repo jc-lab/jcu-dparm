@@ -191,9 +191,8 @@ DparmReturn<std::unique_ptr<LinuxDriverHandle>> SgDriver::open(const char *path)
     }
 
     dev.debug_puts = options_.debug_puts;
-
-    dev.verbose = 1;
-    apt_detect(&dev, 1);
+    dev.verbose = options_.verbose;
+    apt_detect(&dev);
 
     ata::ata_tf_t tf = {0};
     ata::ata_identify_device_data_t temp = {0};

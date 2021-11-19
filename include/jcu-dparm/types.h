@@ -28,8 +28,16 @@ namespace dparm {
 
 typedef std::function<int(const std::string&)> DebugPutsType;
 
+enum VerboseLoggingLevel {
+  kVerboseDisabled = 0,
+  kVerboseError = 1,
+  kVerboseInfo = 2,
+  kVerboseDebug = 3
+};
+
 struct DriveFactoryOptions {
   DebugPutsType debug_puts;
+  VerboseLoggingLevel verbose;
 };
 
 enum DrivingType {
