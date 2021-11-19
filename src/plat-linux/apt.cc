@@ -22,6 +22,9 @@
 #include <scsi/sg.h>
 #include <sys/types.h>
 #include <errno.h>
+
+#include <jcu-dparm/types.h>
+
 //#include "hdparm.h"
 #include "sgio.h"
 
@@ -69,25 +72,26 @@ const struct apt_usb_id_entry apt_usb_id_map[] = {
      apt_jmicron_int_init, apt_jmicron_sg16}  /* JMicron JM20339 (USB->SATA) */
 };
 
-int apt_detect(scsi_sg_device *dev, int verbose) {
+int apt_detect(scsi_sg_device *dev) {
   int err;
   unsigned int i;
 
   dev->apt_data.is_apt = 0;
 
-  err = sysfs_get_attr_recursive(dev->fd, "idVendor", "%x", &dev->apt_data.id.vendor_id, NULL, verbose);
+  err = sysfs_get_attr_recursive(dev->fd, "idVendor", "%x", &dev->apt_data.id.vendor_id, NULL, dev->verbose);
   if (err) {
-    if (verbose) fprintf(stderr,"APT: No idVendor found -> not USB bridge device\n");
+    if (dev->verbose >= jcu::dparm::kVerboseInfo)
+      sgio_dbgprintf(dev, "APT: No idVendor found -> not USB bridge device\n");
     return 0;
   }
 
-  err = sysfs_get_attr_recursive(dev->fd, "idProduct", "%x", &dev->apt_data.id.product_id, NULL, verbose);
+  err = sysfs_get_attr_recursive(dev->fd, "idProduct", "%x", &dev->apt_data.id.product_id, NULL, dev->verbose);
   if (err) return 0;
 
-  err = sysfs_get_attr_recursive(dev->fd, "bcdDevice", "%x", &dev->apt_data.id.version, NULL, verbose);
+  err = sysfs_get_attr_recursive(dev->fd, "bcdDevice", "%x", &dev->apt_data.id.version, NULL, dev->verbose);
   if (err) return 0;
 
-  if (verbose)
+  if (dev->verbose >= jcu::dparm::kVerboseInfo)
     sgio_dbgprintf(dev, "APT: USB ID = 0x%04x:0x%04x (0x%03x)\n", dev->apt_data.id.vendor_id, dev->apt_data.id.product_id,
            dev->apt_data.id.version);
 
@@ -113,17 +117,17 @@ int apt_detect(scsi_sg_device *dev, int verbose) {
   }
 
   if (!dev->apt_data.id.type || dev->apt_data.id.type == apt_ds_unsup) {
-    if (verbose)
+    if (dev->verbose >= jcu::dparm::kVerboseInfo)
       sgio_dbgprintf(dev, "APT: Unsupported device\n");
 
     return 0;
   }
 
   dev->apt_data.is_apt = 1;
-  if (verbose)
+  if (dev->verbose >= jcu::dparm::kVerboseInfo)
     sgio_dbgprintf(dev, "APT: Found supported device %s\n", dev->apt_data.id.type);
 
-  dev->apt_data.verbose = verbose;
+  dev->apt_data.verbose = dev->verbose;
 
   return (dev->apt_data.id.init_func(dev));
 }
@@ -154,11 +158,11 @@ static int apt_jmicron_int_sg(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_
   unsigned char cdb[12];
   struct scsi_sg_io_hdr io_hdr;
 
-  if (dma && dev->apt_data.verbose)
+  if (dma && dev->apt_data.verbose >= jcu::dparm::kVerboseInfo)
     sgio_dbgprintf(dev, "APT: JMicron doesn't support DMA\n");
 
   if (tf->is_lba48) {
-    if (dev->apt_data.verbose)
+    if (dev->apt_data.verbose >= jcu::dparm::kVerboseError)
       sgio_dbgprintf(dev, "APT: JMicron doesn't support 48-bit ATA commands\n");
     errno = EBADE;
     return -1;
@@ -191,14 +195,14 @@ static int apt_jmicron_int_sg(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_
   io_hdr.timeout = (timeout_secs ? timeout_secs : 5) * 1000; /* msecs */
   io_hdr.cmd_len = sizeof(cdb);
 
-  if (dev->apt_data.verbose)
+  if (dev->apt_data.verbose >= jcu::dparm::kVerboseDebug)
     dump_bytes(dev, "outgoing cdb", cdb, sizeof(cdb));
   if (ioctl(dev->fd, SG_IO, &io_hdr) == -1) {
-    if (dev->apt_data.verbose)
+    if (dev->apt_data.verbose >= jcu::dparm::kVerboseError)
       perror("ioctl(fd,SG_IO)");
     return -1;      /* SG_IO not supported */
   }
-  if (dev->apt_data.verbose)
+  if (dev->apt_data.verbose >= jcu::dparm::kVerboseDebug)
     sgio_dbgprintf(dev, "SG_IO: ATA_%u status=0x%x, host_status=0x%x, driver_status=0x%x\n",
             io_hdr.cmd_len, io_hdr.status, io_hdr.host_status, io_hdr.driver_status);
 
@@ -244,7 +248,7 @@ static int apt_jmicron_int_init(scsi_sg_device *dev) {
     return -1;
   }
 
-  if (dev->apt_data.verbose)
+  if (dev->apt_data.verbose >= jcu::dparm::kVerboseDebug)
     sgio_dbgprintf(dev, "APT: JMicron Port: 0x%X\n", dev->apt_data.jmicron.port);
   return 0;
 }
@@ -259,7 +263,7 @@ static int apt_jmicron_sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t 
 /* No SGIO -> no support*/
 int apt_detect (scsi_sg_device *dev, int verbose)
 {
-    if (verbose)
+    if (verbose >= jcu::dparm::kVerboseDebug)
         sgio_dbgprintf(dev, "APT: SGIO Support needed for fd %d\n", fd);
     return 0;
 }

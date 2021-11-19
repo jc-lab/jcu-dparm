@@ -273,7 +273,7 @@ void init_hdio_taskfile (struct hdio_taskfile *r, __u8 ata_op, int rw, int force
 				__u64 lba, unsigned int nsect, int data_bytes);
 
 /* APT */
-int apt_detect(scsi_sg_device *dev, int verbose);
+int apt_detect(scsi_sg_device *dev);
 int apt_is_apt(scsi_sg_device *dev);
 int apt_sg16(scsi_sg_device *dev, int rw, int dma, ata::ata_tf_t *tf,
 		void *data, unsigned int data_bytes, unsigned int timeout_secs);
