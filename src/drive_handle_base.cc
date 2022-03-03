@@ -76,9 +76,6 @@ int DriveHandleBase::parseIdentifyDevice() {
     if (data.nominal_media_rotation_rate == 0 || data.nominal_media_rotation_rate == 1) {
       ssd_check_weight++;
     }
-    if (data.data_set_management_feature.supports_trim) {
-      ssd_check_weight++;
-    }
 
     drive_info_.ssd_check_weight = ssd_check_weight;
     drive_info_.is_ssd = ssd_check_weight > 0;
